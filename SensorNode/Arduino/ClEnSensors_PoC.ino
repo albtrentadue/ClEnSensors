@@ -1,31 +1,32 @@
 /**
- THCSens / Sensor node
+ ClEnSensors / Sensor node
  by Alberto Trentadue Dec.2015
  
- Sensor node control for the ThC Sensors PoC system.
+ Sensor node control for the ClEnSensors PoC system.
  
- Copyright Alberto Trentadue 2015
+ Copyright Alberto Trentadue 2015, 2016
  
- This file is part of THC Sensori @ Cloud.
+ This file is part of ClEnSensors
 
- THC Sensori @ Cloud is free software: you can redistribute it and/or modify
+ ClEnSensors is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- THC Sensori @ Cloud is distributed in the hope that it will be useful,
+ ClEnSensors is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with THC Sensori @ Cloud.  If not, see <http://www.gnu.org/licenses/>.
+ along with ClEnSensors.  If not, see <http://www.gnu.org/licenses/>.
  */
  
 #include <EEPROM.h>
 #include <DHT.h>
  
 #define LED_BUILTIN 13
+#define EXT_LED 11
 #define ADDRESS_MYID 1
 #define PIN_DHT1 4
 
@@ -53,6 +54,7 @@ char msg_buffer[MAX_RXMSG_LEN];
 String response;
 
 byte heart = 0;
+byte ext_led_on = 0;
 byte cnt_heart = CICLI_HEART;
 
 String msg_sender = "";
@@ -71,7 +73,8 @@ void setup()
   
   Serial.begin(9600); //XBee module is like a serial
   
-  pinMode(LED_BUILTIN, OUTPUT); //Heartbeat con il led su scheda pin 13
+  pinMode(LED_BUILTIN, OUTPUT); //Heartbeat led pin 13
+  pinMode(EXT_LED, OUTPUT);  //Auxiliary led pin 11
   
   dht1.setup(PIN_DHT1, DHT::DHT22);
   
@@ -232,10 +235,6 @@ String collect_measures()
   if (measures.length() > 0) measures += ":";
   measures = measures + VALIM_MIS + String(valim_value);
 
-  
-  //Measure list terminator
-  measures += "/";
-  
   return measures; 
 }
 
@@ -253,12 +252,13 @@ void send_error(byte err_code)
  */
 void send_message() 
 {
+  ext_led_on = 1;
   Serial.print(String(MSG_TERM) + response + String(MSG_TERM));
 }
 
 
 /**
- Heartbeat on the built_in Led
+ Heartbeat on the built_in Led + EXT_LED
  */
 void heartbeat() 
 {
@@ -266,6 +266,9 @@ void heartbeat()
   if (cnt_heart == 0) {
       heart++;
       digitalWrite(LED_BUILTIN, bitRead(heart,0));
+      digitalWrite(EXT_LED, bitRead(ext_led_on,0));
+      if (ext_led_on) ext_led_on = 0;
+      
       cnt_heart = CICLI_HEART;
    }
 }
