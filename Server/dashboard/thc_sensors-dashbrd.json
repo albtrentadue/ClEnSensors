@@ -1,0 +1,123 @@
+{
+	"version": 1,
+	"allow_edit": true,
+	"plugins": [],
+	"panes": [
+		{
+			"title": "Sensore 002",
+			"width": 1,
+			"row": {
+				"1": 1,
+				"2": 1,
+				"3": 1,
+				"4": 1
+			},
+			"col": {
+				"1": 1,
+				"2": 1,
+				"3": 1,
+				"4": 1
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "gauge",
+					"settings": {
+						"title": "Temperatura",
+						"value": "datasources[\"THC Sensors\"][\"resource\"][0][\"valore\"]",
+						"units": "°C",
+						"min_value": "-20",
+						"max_value": 100
+					}
+				}
+			]
+		},
+		{
+			"title": "SENSORE 002",
+			"width": 1,
+			"row": {
+				"3": 1,
+				"4": 1
+			},
+			"col": {
+				"3": 2,
+				"4": 2
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "gauge",
+					"settings": {
+						"title": "Umidità",
+						"value": "datasources[\"THC Sensors\"][\"resource\"][2][\"valore\"]",
+						"units": "%",
+						"min_value": 0,
+						"max_value": 100
+					}
+				}
+			]
+		},
+		{
+			"title": "SENSORE 002",
+			"width": 1,
+			"row": {
+				"3": 1,
+				"4": 1
+			},
+			"col": {
+				"3": 3,
+				"4": 3
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "gauge",
+					"settings": {
+						"title": "Tensione Alimentazione",
+						"value": "Math.round(datasources[\"THC Sensors\"][\"resource\"][1][\"valore\"]*100) / 100",
+						"units": "Volt",
+						"min_value": 0,
+						"max_value": "12"
+					}
+				}
+			]
+		},
+		{
+			"width": 1,
+			"row": {
+				"3": 9,
+				"4": 9
+			},
+			"col": {
+				"3": 2,
+				"4": 2
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "sparkline",
+					"settings": {
+						"title": "Temperatura e Umidità - Ultime misure",
+						"value": [
+							"datasources[\"THC Sensors\"][\"resource\"][0][\"valore\"]",
+							"datasources[\"THC Sensors\"][\"resource\"][2][\"valore\"]"
+						]
+					}
+				}
+			]
+		}
+	],
+	"datasources": [
+		{
+			"name": "THC Sensors",
+			"type": "JSON",
+			"settings": {
+				"url": "http://localhost:8081//api/v2/thcsensors/_table/thc_misure?filter=id_sensore%3D2&limit=3&order=timestamp%20DESC,misura%20ASC&api_key=d6384bbc5db8e79a0e5299da22e5af2401aa6b070d6f20dd18093032642d9c51",
+				"use_thingproxy": false,
+				"refresh": 15,
+				"method": "GET"
+			}
+		}
+	],
+	"columns": 3
+}
