@@ -24,11 +24,15 @@
  
 #include <EEPROM.h>
 #include <DHT.h>
+#include <SoftwareSerial.h>
  
 #define LED_BUILTIN 13
 #define EXT_LED 11
 #define ADDRESS_MYID 1
 #define PIN_DHT1 4
+#define PIN_DHT2 5
+#define SWSERIAL_RX 9
+#define SWSERIAL_TX 10
 
 //serve() response codes
 #define RESP_OK 0
@@ -57,6 +61,8 @@ byte heart = 0;
 byte ext_led_on = 0;
 byte cnt_heart = CICLI_HEART;
 
+SoftwareSerial XBee(SWSERIAL_RX, SWSERIAL_TX);
+
 String msg_sender = "";
 String msg_dest = "";
 String msg_type = ""; 
@@ -67,11 +73,13 @@ DHT dht1;
 /* NODE SETUP */
 void setup()
 { 
-  //The ID of this card must be PRE-programmed.
+  //NOTE! The ID of this card must be PRE-programmed by writing 
+  //in the ADDRESS_MYID EEPROM location
   node_ID = EEPROM.read(ADDRESS_MYID);
   myID = format_byte(node_ID, 3);
   
-  Serial.begin(9600); //XBee module is like a serial
+  //Serial.begin(9600); //For test when no XBee
+  XBee.begin(9600);
   
   pinMode(LED_BUILTIN, OUTPUT); //Heartbeat led pin 13
   pinMode(EXT_LED, OUTPUT);  //Auxiliary led pin 11
@@ -129,13 +137,13 @@ int receive_msg()
   msg_buffer[0] = MSG_TERM;
   
   // see if there's incoming serial data:
-  if (Serial.available() > 0) {
+  if (XBee.available() > 0) {
     //Search the message starter
-    char incomingByte = Serial.read();
+    char incomingByte = XBee.read();
     //Skip any pre-existing byte from the serial which is not a 127
     if (incomingByte == MSG_TERM) {
       //Build up the message string
-      num_read = Serial.readBytesUntil(MSG_TERM, msg_buffer, MAX_RXMSG_LEN);
+      num_read = XBee.readBytesUntil(MSG_TERM, msg_buffer, MAX_RXMSG_LEN);
       //If MAX_RXMSG_LEN bytes were read, means that # was not received! 
       if (num_read == MAX_RXMSG_LEN) msg_buffer[0] = '?';
       else
@@ -253,7 +261,8 @@ void send_error(byte err_code)
 void send_message() 
 {
   ext_led_on = 1;
-  Serial.print(String(MSG_TERM) + response + String(MSG_TERM));
+  //Serial.print(String(MSG_TERM) + response + String(MSG_TERM));
+  XBee.print(String(MSG_TERM) + response + String(MSG_TERM));
 }
 
 
