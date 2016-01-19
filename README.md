@@ -4,4 +4,4 @@ ClEnSensor is a system integration project aimed to produce a DIY system enablin
 - monitor and report on the web the environmental status of a general purpose system, by means of sensors deployed on a wireless network
 - control certain actuators either automatically (with trigger or threshold logic) or remotely via a web enabled management console
 
-Please check the **[wiki](https://github.com/albtrentadue/ClEnSensors/wiki)** for more information
+Please check the **[wiki](http://clensensors.wikidot.com/)** for more information
