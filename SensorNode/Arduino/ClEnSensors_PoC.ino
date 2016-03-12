@@ -30,17 +30,29 @@
 #define EXT_LED 11
 #define PART_ENABLE 12
 #define XBEE_SLEEP 8
-#define ADDRESS_MYID 1
 #define PIN_DHT1 4
 #define PIN_DHT2 5
 #define SWSERIAL_RX 9
 #define SWSERIAL_TX 10
 #define VALIM_ANALOG A4
+#define PIN_ANALOG1 A0
+#define PIN_ANALOG2 A1
+
+
+//EEPROM USED ADDRESSES
+#define ADDRESS_MYID 1
+#define ADDRESS_CICLI_SLEEP 2
 
 //serve() response codes
 #define RESP_OK 0
 #define NOT_MINE 1
 #define UNHANDLED 2
+
+//other fixed values
+#define MAX_RXMSG_LEN 25 //>14+10:To be rechecked EACH protocol change!!
+#define MAX_TXMSG_LEN 56 //>14+42 = std msg + 7 * 6 bytes (measures)
+#define MAIN_CYCLE_DELAY 250
+#define CICLI_HEART 2
 
 const char MSG_TERM = '#';
 const char DATA_SEP = ':';
@@ -49,11 +61,6 @@ const String VALIM_MIS = "20";
 
 //Configuration item id's (protocol)
 const String TIME_GRAN = "TG";
-
-const int MAX_RXMSG_LEN=25; //>14+10:To be rechecked EACH protocol change!!
-const int MAX_TXMSG_LEN=40;   //>14+26 For the PoC2 30 is enough
-const int MAIN_CYCLE_DELAY=250;
-const int CICLI_HEART=2;
 
 int node_ID;
 String myID;
@@ -65,9 +72,9 @@ byte heart = 0;
 byte ext_led_on = 0;
 byte cnt_heart = CICLI_HEART;
 //The amount of MAIN_CYCLE_DELAY times the XBee will be in sleep.
-//equal to = (TimeGranularity*60*1000-5000)/MAIN_CYCLE_DELAY
-//default is considering TG=1 -> 220
-unsigned int cicli_sleep=220;
+//equal to = (TimeGranularity*60*1000-3000)/MAIN_CYCLE_DELAY
+//default is considering TG=1 -> 228
+unsigned int cicli_sleep=228;
 unsigned int cnt_sleep=0;
 boolean xbee_sleeping = false;
 
@@ -79,6 +86,7 @@ String msg_type = "";
 String msg_data = "";
 
 DHT dht1;
+DHT dht2;
 
 /* NODE SETUP */
 void setup()
@@ -87,6 +95,12 @@ void setup()
   //in the ADDRESS_MYID EEPROM location
   node_ID = EEPROM.read(ADDRESS_MYID);
   myID = format_byte(node_ID, 3);
+  //NOTE! The default value of cicli_sleep (228,0) must be PRE-programmed by
+  //writing in the ADDRESS_CICLI_SLEEP EEPROM location
+  byte bl = EEPROM.read(ADDRESS_CICLI_SLEEP);
+  byte bh = EEPROM.read(ADDRESS_CICLI_SLEEP+1);//2 bytes are read!
+  cicli_sleep = bl + 0xFF * bh;
+  
   
   //Serial.begin(9600); //For test when no XBee
   XBee.begin(9600);
@@ -94,9 +108,9 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT); //Heartbeat led pin 13
   pinMode(EXT_LED, OUTPUT);  //Auxiliary led pin 11
   pinMode(PART_ENABLE, OUTPUT);  //Partitor enabler pin 12
-  //pinMode(XBEE_SLEEP, OUTPUT);  //Xbee sleep ctl pin 8
   
   dht1.setup(PIN_DHT1, DHT::DHT22);
+  dht2.setup(PIN_DHT2, DHT::DHT22);
   //Starting mode: the battery sampler is enabled and XBee awake
   set_xbee_sleep(false);
   delay(50);
@@ -138,7 +152,6 @@ String format_byte(byte b, byte len)
   while (r.length() < len) r = '0' + r;
   return r;
 }
-
 
 /**
  Retrieves a message string from the bus.
@@ -266,8 +279,17 @@ int apply_setting(String s) {
       //Dimension the sleep duration
       int granularity = cfg_value.toInt();
       if (granularity) {
-        long gm = granularity*60000L-5000;
-        cicli_sleep=gm/MAIN_CYCLE_DELAY;
+        //Sleep time = granularity minus 3sec
+        long gm = granularity*60000L-3000L;
+        unsigned int new_cicli_sleep = gm/MAIN_CYCLE_DELAY;
+        if (new_cicli_sleep != cicli_sleep) {
+          cicli_sleep = new_cicli_sleep;
+          //Stores the last configuration in EEPROM
+          byte b = byte(cicli_sleep % 0xFF);          
+          EEPROM.write(ADDRESS_CICLI_SLEEP, b);
+          b = byte(cicli_sleep / 0xFF);
+          EEPROM.write(ADDRESS_CICLI_SLEEP+1, b);
+        }
       }
     }
     return cnt;
@@ -285,25 +307,40 @@ int apply_setting(String s) {
 String collect_measures() 
 {
   String measures = "";
+  float ms;
   
   //Read the temp value from DHT22 sensor - the read can take some time.
-  float t1 = dht1.getTemperature();
+  ms = dht1.getTemperature();
   if (String(dht1.getStatusString()) == "OK") 
-    measures = measures + "04" + String(int(t1)); //meas tag #4
+    measures = measures + "04" + String(int(ms)); //meas tag #4
   //Serial.print("DHT_STATUS_T:"+String(dht1.getStatusString()));
 
   //Read the humidity value from DHT22 sensor - the read can take some time.  
-  float h1 = dht1.getHumidity();
+  ms = dht1.getHumidity();
   if (String(dht1.getStatusString()) == "OK") {
     if (measures.length() > 0) measures += ":";
-    measures = measures + "05" + String(int(h1)); //meas tag #5
+    measures = measures + "05" + String(int(ms)); //meas tag #5
   }
   //Serial.print("DHT_STATUS_H:"+String(dht1.getStatusString()));
   
-  //Always send the Voltage value measured by analog pin.
-  int valim_value = analogRead(VALIM_ANALOG);
+  ms = dht2.getTemperature();
+  if (String(dht2.getStatusString()) == "OK") 
+    measures = measures + "06" + String(int(ms)); //meas tag #6
+  //Serial.print("DHT_STATUS_T:"+String(dht2.getStatusString()));
+
+  //Read the humidity value from DHT22 sensor - the read can take some time.  
+  ms = dht2.getHumidity();
+  if (String(dht2.getStatusString()) == "OK") {
+    if (measures.length() > 0) measures += ":";
+    measures = measures + "07" + String(int(ms)); //meas tag #7
+  }
+  //Serial.print("DHT_STATUS_H:"+String(dht2.getStatusString()));  
+  
+  //Read the analog values
   if (measures.length() > 0) measures += ":";
-  measures = measures + VALIM_MIS + String(valim_value);
+  measures = measures + "00" + String(analogRead(PIN_ANALOG1)) + ":01" + String(analogRead(PIN_ANALOG2));
+  //Battery voltage value measured by analog pin.
+  measures = measures + ":" + VALIM_MIS + String(analogRead(VALIM_ANALOG));
 
   return measures; 
 }

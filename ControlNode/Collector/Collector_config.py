@@ -117,8 +117,8 @@ class Collector_config:
         """
         def get_transcalibration_values(self, node_id, sens_tag):
                 tc_key=node_id+sens_tag
-                if tc_key in __transcalibrations.keys():
-                        return __transcalibrations[tc_key]
+                if tc_key in self.__transcalibrations.keys():
+                        return self.__transcalibrations[tc_key]
                 else:
                         return None
 

@@ -1,23 +1,23 @@
 """
- ClENSensors / Control node / Collector object
+ ClEnSensors / Control node / Collector object
  by Alberto Trentadue Dec.2015
  
  Copyright Alberto Trentadue 2015, 2016
  
  This file is part of ClENSensors.
 
- ClENSensors is free software: you can redistribute it and/or modify
+ ClEnSensors is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- ClENSensors is distributed in the hope that it will be useful,
+ ClEnSensors is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with ClENSensors.  If not, see <http://www.gnu.org/licenses/>.
+ along with ClEnSensors.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 #"serial" is imported from the external module pySerial / https://pythonhosted.org/pyserial/
@@ -119,9 +119,9 @@ class Collector (threading.Thread):
 			time_limit = time.time()+ self.__config.MAX_SENSOR_NODES + 1
 			while self.__keep_on and time.time() < time_limit:
 				rx_msg = self._receive_msg()
-				if rx_msg != None:
-					discovered_id = rx_msg['SENDER_ID']
-					if not discovered_id in self.__sensor_nodes:
+                                if rx_msg != None:
+                                        discovered_id = rx_msg['SENDER_ID']
+                                        if not discovered_id in self.__sensor_nodes:
                                                 self.__sensor_nodes.append(discovered_id)
                                                 self.__logger.info('Discovered new sensor node with ID:' + discovered_id)
                                                 #Sends the config info to the discovered node
@@ -153,7 +153,7 @@ class Collector (threading.Thread):
                 self.__logger.info('Sending the config message to node ' + node_id)
 		#Sends the CONFIG message
                 self._send_command(node_id, 'CONFIG', 'TG'+str(self.__config.TIME_INTERVAL / 60))
-                time.sleep(0.3)
+                time.sleep(0.6)
                 rx_msg = self._receive_msg()
                 if rx_msg != None:
                         if rx_msg['MSG_TYPE'] == 'CFGACK' and rx_msg['SENDER_ID'] == node_id:
@@ -195,18 +195,17 @@ class Collector (threading.Thread):
 
 	"""
 	Queries the active sensors and collects the available measures from them.
-	Returns a dictionary with the node_id is key.
-	The value is a list of pairs (meas_tag, value)
+	Returns a dictionary with the node_id as key and a list of pairs (meas_tag, value) as value.
 	"""
 	def _collect_measures(self):
 		measures = {}
 		
 		for sn in self.__sensor_nodes :                        
 			self._send_command(sn, 'QRYMSR')
-			time.sleep(0.5)
+			time.sleep(0.6)
 			rx_msg = self._receive_msg()
 			if rx_msg != None:
-				measures[sn] = self._extract_measures(rx_msg['MSG_DATA'])
+				measures[sn] = self._calibrate(sn, self._extract_measures(rx_msg['MSG_DATA']))
 				
 		return measures
 
@@ -226,6 +225,22 @@ class Collector (threading.Thread):
 			measures.append((tag,value))
 		
 		return measures
+
+	"""
+        Calibrate the measures based on the transcalibration configuration.
+        Takes the node id and the list of measures as (tag,value as string) pairs.
+        Returns a list of measures as (tag,value as string) pairs, but with calibrated values
+        """
+	def _calibrate(self, node_id, meas_list):
+                measures = []
+                for meas in meas_list:                        
+                        tc = self.__config.get_transcalibration_values(node_id, meas[0])
+                        if tc != None:
+                                measures.append((meas[0], str(int(meas[1]) * tc[4] + tc[3])))
+                        else:
+                                self.__logger.warning('Tag ' + meas[0] + ' is not configured for node ' + node_id + ': measure will be dropped.')
+
+                return measures
 
 	"""
 	Stores the received measures into the RRD database used

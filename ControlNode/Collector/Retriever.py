@@ -207,28 +207,31 @@ class Retriever (threading.Thread):
                 retval = False
                 if self.__rest_connected :
                         for measure in measures :
-                                tc_measure = self._trans_calibrate(measure)
-                                #Store to DB via REST API here
-                                self.__logger.debug('Measure record to be posted:' + str(tc_measure))
-                                #Prepare the record
-                                rec={}
-                                rec["timestamp"] = timestamp
-                                rec["id_sensore"] = int(tc_measure['ID_SENSOR'])
-                                rec["posizione"] = tc_measure['POSITION']
-                                rec["misura"] = tc_measure['MEASURED_ITEM']
-                                rec["unita"] = tc_measure['UNIT']
-                                rec["valore"] = tc_measure['VALUE'] #float
-                                
-                                rest_sensors_api={}
-                                rest_sensors_api["resource"]=rec
-                                # Store data into DB via REST
-                                #resp = unirest.post("http://" + REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+DF_API_KEY+"&session_token="+rest_session_id, headers = {"X-DreamFactory-Application-Name": DF_APP, "X-DreamFactory-Session-Token": rest_session_id}, params=json.dumps(rest_sensors_api))
-                                try:
-                                        resp = unirest.post("http://" + REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+DF_API_KEY+"&session_token="+rest_session_id, headers = {}, params=json.dumps(rest_sensors_api))
-                                        self.__logger.debug('REST Record posted to DB:' + str(rec))
-                                        retval = True
-                                except:
-                                        self.__logger.error('REST Record post failed. Response was ' + resp)
+                                tc_measure = self._translate(measure)
+                                if tc_measure != None:
+                                        #Store to DB via REST API here
+                                        self.__logger.debug('Measure record to be posted:' + str(tc_measure))
+                                        #Prepare the record
+                                        rec={}
+                                        rec["timestamp"] = timestamp
+                                        rec["id_sensore"] = int(tc_measure['ID_SENSOR'])
+                                        rec["posizione"] = tc_measure['POSITION']
+                                        rec["misura"] = tc_measure['MEASURED_ITEM']
+                                        rec["unita"] = tc_measure['UNIT']
+                                        rec["valore"] = tc_measure['VALUE'] #float
+                                        
+                                        rest_sensors_api={}
+                                        rest_sensors_api["resource"]=rec
+                                        # Store data into DB via REST
+                                        #resp = unirest.post("http://" + REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+DF_API_KEY+"&session_token="+rest_session_id, headers = {"X-DreamFactory-Application-Name": DF_APP, "X-DreamFactory-Session-Token": rest_session_id}, params=json.dumps(rest_sensors_api))
+                                        try:
+                                                resp = unirest.post("http://" + REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+DF_API_KEY+"&session_token="+rest_session_id, headers = {}, params=json.dumps(rest_sensors_api))
+                                                self.__logger.debug('REST Record posted to DB:' + str(rec))
+                                                retval = True
+                                        except:
+                                                self.__logger.error('REST Record post failed. Response was ' + resp)
+                                else:
+                                        self.__logger.warning('Unknown tag '+measure['MEAS_TAG']+' in translation for node '+measure['ID_SENSOR'])
                 else:
                         self.__logger.info('Measures not posted because connection to REST server is not available.')
                                 
@@ -236,23 +239,22 @@ class Retriever (threading.Thread):
 
         """
          Translates the raw data into data to be stored in the database
-         Also, calibrate the measures according to the defined calibration settings
          The measure parameter is a measure dictionary (see collect_measures for structure)
          Returns a dictionay that is the initial measure structure as above, enriched with fields:
          t['POSITION']
          t['MEASURED_ITEM']
          t['UNIT']
         """
-        def _trans_calibrate(measure) :
+        def _translate(measure) :
                 tc_measure = measure
                 tc = self.__config.get_transcalibration_values(measure['ID_SENSOR'], measure['MEAS_TAG'])
-                
-                tc_measure['POSITION'] = tc[0]
-                tc_measure['MEASURED_ITEM'] = tc[1]
-                tc_measure['UNIT'] = tc[2]
-                tc_measure['VALUE'] = measure['VALUE'] * tc[4] + tc[3]
-                
-                return tc_measure
+                if tc != None:
+                        tc_measure['POSITION'] = tc[0]
+                        tc_measure['MEASURED_ITEM'] = tc[1]
+                        tc_measure['UNIT'] = tc[2]
+                        return tc_measure
+                else:
+                        return None
 
         """
         Causes the thread to exit
