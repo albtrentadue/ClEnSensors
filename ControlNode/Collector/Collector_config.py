@@ -49,6 +49,9 @@ class Collector_config:
 
         # The list of the statically configured nodes
 	__configured_nodes = []
+
+	# The lists of configured tags for each confiured node
+	__configured_tags_by_node = {}
 	
 	"""
 	Load parameters from the cfg file
@@ -76,7 +79,7 @@ class Collector_config:
                 self.RRD_LENGTH = config.getint('rrd','rrd_length')
 
                 self._load_transcalibration()
-                self._set_configured_nodes()
+                self._set_configured_lists()
 
         """
         Load the transformation/calibration configuration from the clen_transcalibration.cfg file
@@ -120,23 +123,34 @@ class Collector_config:
                 if tc_key in self.__transcalibrations.keys():
                         return self.__transcalibrations[tc_key]
                 else:
-                        return None
+                        return None              
 
         """
-        Extracts the list of nodes configured in the Transcalibration file
-        building the list of the statically configured nodes
+        Extracts the following lists from the static configuration in the Transcalibration file:
+        1. Configured nodes
+        2. Configired tags per node
         """
-        def _set_configured_nodes(self):
+        def _set_configured_lists(self):
                 for tc_key in self.__transcalibrations.keys():
                         node_id = tc_key[:3]
                         if node_id not in self.__configured_nodes:
                                 self.__configured_nodes.append(node_id)
+                                self.__configured_tags_by_node[node_id] = [tc_key[3:]]
+                        else:
+                                self.__configured_tags_by_node[node_id].append(tc_key[3:])
 
         """
         Gets the list of the statically configured nodes
         """
         def get_configured_nodes(self):
                 return self.__configured_nodes
+
+        """
+        Gets the list of measure tags configured in the transcalibration
+        for one give node
+        """
+        def get_configured_tags_by_node(self, node_id):
+                return self.__configured_tags_by_node[node_id]
                 
 ### Collector_config class definition ends here
 

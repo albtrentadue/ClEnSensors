@@ -62,20 +62,18 @@ class RRD ():
 
 	"""
 	Stores measures into the RRD database associated to a given node id
-	Values are passed as a list of tuples (tag,value)
+	Values are passed as a dictionary: tag as key, value_as_string as value
 	"""
 	def store_measures(self, timestamp, node_id, values):
                 rrd_db = self.__config.RRD_BASE_DIR + '/n' + node_id + '.rrd'
                 ds_list = ''
                 vl_list = str(timestamp)
-                for pr in values:
-                        #pr[0] holds the meas tag
+                for tg in values.keys():                        
                         if len(ds_list):
-                                ds_list = ds_list + ':' + pr[0]
+                                ds_list = ds_list + ':' + tg
                         else:
-                                ds_list = pr[0]
-                        #pr[1] holds the value
-                        vl_list = vl_list + ':' + pr[1]
+                                ds_list = tg                        
+                        vl_list = vl_list + ':' + values[tg]
                         
                 self.__logger.debug('RRD datasource list is ' + ds_list)
                 self.__logger.debug('RRD value list is ' + vl_list)

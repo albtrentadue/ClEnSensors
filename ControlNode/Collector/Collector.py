@@ -21,7 +21,7 @@
 """
 
 #"serial" is imported from the external module pySerial / https://pythonhosted.org/pyserial/
-import sys, serial, time, logging, threading
+import sys, serial, time, logging, threading, copy
 
 # Constant values
 MSG_TERMINATOR = '#'
@@ -47,6 +47,9 @@ class Collector (threading.Thread):
 
 	# The list of the IDs of discovered sensor nodes
 	__sensor_nodes = []
+
+	# The empty measure dictionary
+	__empty_measures = {}
 	
 	# The serial interface to communicate to sensors
 	__serial_if = None
@@ -75,6 +78,10 @@ class Collector (threading.Thread):
 		self.__logger.addHandler(hdlr)
 		loglevel=eval('logging.' + config.LOG_LEVEL)
 		self.__logger.setLevel(loglevel)
+
+		#Initialization of the dictionary with unknowns 
+                for nd in config.get_configured_nodes():
+                        self.__empty_measures[nd] = {tg : 'U' for tg in config.get_configured_tags_by_node(nd)}
 
         """
         The thread runner
@@ -170,8 +177,7 @@ class Collector (threading.Thread):
 		data_time = self._align_time()
 		self.__logger.info('Collecting measures for timestamp {0}.'.format(data_time))
 		measures = self._collect_measures()
-		if len(measures) > 0:
-			self._store_measures_rrd(data_time, measures)
+		self._store_measures_rrd(data_time, measures)
 
 
 	"""
@@ -195,26 +201,34 @@ class Collector (threading.Thread):
 
 	"""
 	Queries the active sensors and collects the available measures from them.
-	Returns a dictionary with the node_id as key and a list of pairs (meas_tag, value) as value.
+	Returns a dictionary with the node_id as key and a list of pairs (meas_tag, value as string) as value.
+	
+        Each RRD created for a node must always receive the same amount of values
+        to feed the data sources defined in it, either actual values or UNKNOWN.
+        To do ths, the returned dictionary is initialized with all UNKNOWN and they are replaced
+        by  values if thei are extracted from the messages	
 	"""
 	def _collect_measures(self):
-		measures = {}
-		
+                #Initialization to empty
+                measures = copy.deepcopy(self.__empty_measures)
+
 		for sn in self.__sensor_nodes :                        
 			self._send_command(sn, 'QRYMSR')
 			time.sleep(0.6)
 			rx_msg = self._receive_msg()
 			if rx_msg != None:
-				measures[sn] = self._calibrate(sn, self._extract_measures(rx_msg['MSG_DATA']))
-				
+                                valued_measures = self._calibrate(sn, self._extract_measures(rx_msg['MSG_DATA']))
+                                for tg in valued_measures.keys():
+                                        measures[sn][tg] = valued_measures[tg]
+
 		return measures
 
 	"""
-	Extract the measures from the data part of the message
-	Returns a list of pairs (measure tag string, value as string)
+	Extract the measures from the data part of the message received from a node. 
+	Returns a dictionary: measure tag as key, value_as_string as value
 	"""
 	def _extract_measures(self, data_part):
-		measures = []
+		measures = {}
 		
 		meas_list = data_part.split(':')
 		#now each element of the lits is a string '<TT><VALUE>'
@@ -222,34 +236,33 @@ class Collector (threading.Thread):
 		for meas in meas_list:
 			tag = meas[0:2]
 			value = meas[2:]
-			measures.append((tag,value))
+			measures[tag] = value
 		
 		return measures
 
 	"""
         Calibrate the measures based on the transcalibration configuration.
-        Takes the node id and the list of measures as (tag,value as string) pairs.
-        Returns a list of measures as (tag,value as string) pairs, but with calibrated values
+        Takes the node id and dictionary of measures (tag as key, value_as_string as value).
+        Returns the same dictionary, but with calibrated values
         """
-	def _calibrate(self, node_id, meas_list):
-                measures = []
-                for meas in meas_list:                        
-                        tc = self.__config.get_transcalibration_values(node_id, meas[0])
+	def _calibrate(self, node_id, measures):
+                for tg in measures.keys():                        
+                        tc = self.__config.get_transcalibration_values(node_id, tg)
                         if tc != None:
-                                measures.append((meas[0], str(int(meas[1]) * tc[4] + tc[3])))
+                                measures[tg] = str(int(measures[tg]) * tc[4] + tc[3])                                
                         else:
-                                self.__logger.warning('Tag ' + meas[0] + ' is not configured for node ' + node_id + ': measure will be dropped.')
+                                self.__logger.warning('Tag ' + tg + ' is not configured for node ' + node_id + ': measure will be dropped.')
+                                del measures[tg]
 
                 return measures
 
 	"""
-	Stores the received measures into the RRD database used
-	as a local measure buffer
+	Stores the received measures into the RRD database used as a local measure buffer.
+	Takes the timestamp and the current dictionary of collected measures
 	"""
-	def _store_measures_rrd(self, timestamp, measures):
+	def _store_measures_rrd(self, timestamp, measures):                
 		for node_id in measures.keys():
                         self.__RRD_if.store_measures(timestamp, node_id, measures[node_id])                        
-
 
 	"""
 	Sends a string command to nodes via the serial interface

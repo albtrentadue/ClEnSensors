@@ -32,8 +32,8 @@
 #define XBEE_SLEEP 8
 #define PIN_DHT1 4
 #define PIN_DHT2 5
-#define SWSERIAL_RX 9
-#define SWSERIAL_TX 10
+#define SWSERIAL_RX 10 //swapped after circuit change
+#define SWSERIAL_TX 9 //swapped after circuit change
 #define VALIM_ANALOG A4
 #define PIN_ANALOG1 A0
 #define PIN_ANALOG2 A1
@@ -324,8 +324,10 @@ String collect_measures()
   //Serial.print("DHT_STATUS_H:"+String(dht1.getStatusString()));
   
   ms = dht2.getTemperature();
-  if (String(dht2.getStatusString()) == "OK") 
+  if (String(dht2.getStatusString()) == "OK") {
+    if (measures.length() > 0) measures += ":";
     measures = measures + "06" + String(int(ms)); //meas tag #6
+  }    
   //Serial.print("DHT_STATUS_T:"+String(dht2.getStatusString()));
 
   //Read the humidity value from DHT22 sensor - the read can take some time.  
