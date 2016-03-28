@@ -74,7 +74,7 @@ class Collector_config:
                 self.REST_APP_USER = config.get('rest','rest_app_user')
                 self.REST_APP_PWD = config.get('rest','rest_app_pwd')
                 self.DF_APP = config.get('rest','df_app')
-                self.DF_API_KEY = config.get('rest','df_api_key')
+                self.API_KEY = config.get('rest','api_key')
                 self.RRD_BASE_DIR = config.get('rrd','rrd_base_dir')
                 self.RRD_LENGTH = config.getint('rrd','rrd_length')
 

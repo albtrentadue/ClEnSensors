@@ -53,9 +53,12 @@ class Collector (threading.Thread):
 	
 	# The serial interface to communicate to sensors
 	__serial_if = None
-	
-	# The cycle switch
-	__keep_on = True
+
+	# The last collected timestamp
+	__last_collected_ts = 0
+
+	# The thread safety lock
+        __collector_lock = threading.Lock()
 
 	#Initializer
 	def __init__(self, config, serial_port, RRD_if):
@@ -83,13 +86,16 @@ class Collector (threading.Thread):
                 for nd in config.get_configured_nodes():
                         self.__empty_measures[nd] = {tg : 'U' for tg in config.get_configured_tags_by_node(nd)}
 
+                # The cycle switch
+                self.keep_on = True
+
         """
         The thread runner
         """
         def run(self):
                 self._create_serial()
                 self._discover()
-                while self.__keep_on:
+                while self.keep_on:
                         self._fetch()
                 
 	
@@ -116,7 +122,7 @@ class Collector (threading.Thread):
 	communicating the time granularity configured in the system.
 	"""
 	def _discover(self):
-		while self.__keep_on :
+		while self.keep_on :
 			self.__logger.info('Starting new discovering cycle')
 			#Sends out the broadcast message
 			self._send_command(BROADCAST_ID, 'IDNREQ')
@@ -124,7 +130,7 @@ class Collector (threading.Thread):
 			time.sleep(1)
 			#Responses are collected for a time interval equal to MAX_SENSOR_NODES + 1	
 			time_limit = time.time()+ self.__config.MAX_SENSOR_NODES + 1
-			while self.__keep_on and time.time() < time_limit:
+			while self.keep_on and time.time() < time_limit:
 				rx_msg = self._receive_msg()
                                 if rx_msg != None:
                                         discovered_id = rx_msg['SENDER_ID']
@@ -145,7 +151,7 @@ class Collector (threading.Thread):
 				self.__logger.info('No sensor found in range. Waiting 1 minute')
 				for i in range(30):
                                         time.sleep(2)
-                                        if not self.__keep_on:
+                                        if not self.keep_on:
                                                 break
 
                 if len(set(self.__sensor_nodes) - set(self.__config.get_configured_nodes())) > 0:
@@ -178,7 +184,19 @@ class Collector (threading.Thread):
 		self.__logger.info('Collecting measures for timestamp {0}.'.format(data_time))
 		measures = self._collect_measures()
 		self._store_measures_rrd(data_time, measures)
+		Collector.__collector_lock.acquire()
+		Collector.__last_collected_ts = data_time
+		Collector.__collector_lock.release()
 
+        """
+         Returns the last collected ts whose data have been insterted in the RRD
+         This is a thread synchronisation method
+        """
+        def get_last_collected_ts(self):
+                Collector.__collector_lock.acquire()
+                lct = Collector.__last_collected_ts
+                Collector.__collector_lock.release()
+                return lct
 
 	"""
 	Waits until the current time is an integral multiple of the
@@ -317,7 +335,7 @@ class Collector (threading.Thread):
         Causes the thread to exit
         """
         def shutdown(self):
-                self.__keep_on = False
+                self.keep_on = False
 
 ### Collector class definition ends here
 

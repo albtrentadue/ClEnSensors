@@ -32,7 +32,7 @@ import sys, signal, threading, time
 from Collector_config import Collector_config
 from Collector import Collector
 from RRD import RRD
-from Retriever import Retriever
+from EmonRetriever import EmonRetriever
 
 # Constant values
 MSG_TERMINATOR = '#'
@@ -68,7 +68,7 @@ rrd_if = RRD(the_config)
 collector = Collector(the_config, sys.argv[1], rrd_if)
 collector.start()
 time.sleep(1)
-retriever = Retriever(the_config, rrd_if)
+retriever = EmonRetriever(the_config, collector, rrd_if)
 retriever.start()
 
 while keep_on:
