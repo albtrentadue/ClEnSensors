@@ -23,7 +23,9 @@
 """
 
 #"rrdtool" is imported from the external module python-rrdtool / https://pypi.python.org/pypi/python-rrdtool
-import rrdtool, logging, threading, sys
+import rrdtool, threading, sys
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 """
  The RRD class implements the centralised interface to the RRD database.
@@ -49,7 +51,7 @@ class RRD ():
         # Logger setup: use the FileHandler only if need to troubleshoot
         if config.LOG_TO_FILE:
             try:
-                hdlr = logging.FileHandler(config.LOG_FILE_DEST)
+                hdlr = TimedRotatingFileHandler(config.LOG_FILE_DEST, 'D', 1, 1)
             except:
                 hdlr = logging.StreamHandler(sys.stdout)
         else:

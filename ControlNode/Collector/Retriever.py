@@ -22,7 +22,9 @@
  along with ClENSensors.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys, time, logging, pickle, threading
+import sys, time, pickle, threading
+import logging
+from logging.handlers import TimedRotatingFileHandler
 from Collector import Collector
 
 # The file holding the serialized last ts sent to the remote DB
@@ -57,7 +59,7 @@ class Retriever (threading.Thread):
 	# Logger setup: use the FileHandler only if need to troubleshoot
 	if config.LOG_TO_FILE:
 	    try:
-		hdlr = logging.FileHandler(config.LOG_FILE_DEST)
+		hdlr = TimedRotatingFileHandler(config.LOG_FILE_DEST, 'D', 1, 1)
 	    except:
 		hdlr = logging.StreamHandler(sys.stdout)
 	else:

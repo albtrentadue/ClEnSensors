@@ -199,7 +199,7 @@ int serve()
   //Handles the IDNREQ Command
   if (msg_type.equals("IDNREQ")) {
     //Waits a time in seconds equal to myID - to avoid collision
-    delay(1000L * node_ID);
+    delay(2000L * node_ID);
     make_response(msg_sender, "IDRESP", "");
     return RESP_OK;
   }
