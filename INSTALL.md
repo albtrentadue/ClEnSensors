@@ -59,7 +59,31 @@ The Control Node uses the **RRDTool** round-robin database tool as local buffer 
 
 The RRDTool installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
- ```# sudo apt-get install rrdtool```
+```# sudo apt-get install rrdtool```
 
+The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
 
+```# sudo mkdir /var/opt/clensensors```
+```# sudo chown clensensors.clensensors /var/opt/clensensors```
  
+### Other useful SW components
+Besides the necessary SW components, it is recommended to install on the Linux box the following utilities that may be needed to troubleshoot the system in case of problems.
+
+#### ssh service
+The Secure Shell service is useful to manage remotely the control node using a LAN connection. The **openssh-server**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```# sudo apt-get install openssh-server```
+ 
+#### The DiGi XCTU utility
+The **XCTU** utility is the primary graphical interface provided by Digi to configure the **XBee** modules. It may be useful in order to verify of configure in the field a XBee module.
+The XCTU installation binary file can be downloaded from the Digi website http://www.digi.com/
+ 
+#### A Python IDE
+Although the code has been tested before releasing it for use, further debugging activities may be need in case of troubleshooting. Therefore having a Python oriented IDE tool may turn to be useful.
+Any IDE tool can be chosed at own preference. the **Idle** development tool has been used for the system integration:
+ 
+```# sudo apt-get install idle``` 
+
+## Control Node SW installation
+
+TBW
