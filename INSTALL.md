@@ -1,0 +1,2 @@
+ClEnSensors
+Installation & Configuration Manual
