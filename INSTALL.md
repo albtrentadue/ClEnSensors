@@ -86,7 +86,7 @@ Any IDE tool can be chosed at own preference. the **Idle** development tool has 
 ```# sudo apt-get install idle``` 
 
 ## ClEnSensors Collector installation
-The **ClEnSensors Collector** can be installed from the released package file named **ClEn_Collector-<version>.tgz**.
+The **ClEnSensors Collector** can be installed from the released package file named **ClEn_Collector-{version}.tgz**.
 The package file is a tar compressed file including the pre-built software structure.
 
 ### Insatallation directory
@@ -108,7 +108,7 @@ Next, the file can be uncompressed
 
 ```# cd /opt```
 
-```# sudo tar xzf ClEn_Collector-<version>.tgz```
+```# sudo tar xzf ClEn_Collector-{version}.tgz```
 
 Next, the directory permissions can be applied
 
