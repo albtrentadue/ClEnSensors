@@ -85,7 +85,7 @@ Any IDE tool can be chosed at own preference. the **Idle** development tool has 
  
 ```# sudo apt-get install idle``` 
 
-## ClEnSecnors Collector installation
+## ClEnSensors Collector installation
 The **ClEnSensors Collector** can be installed from the released package file named **ClEn_Collector-<version>.tgz**.
 The package file is a tar compressed file including the pre-built software structure.
 
@@ -116,3 +116,12 @@ Next, the directory permissions can be applied
 
 ```# sudo chmod -R 755 ./clensensors```
 
+Next, specific permission may be set inside the installation directories
+
+```cd clensensors```
+
+```# chmod uga-x *.* LICENSE cfg/*.*```
+
+## ClEnSecnors Collector configuration
+
+*TBW*
