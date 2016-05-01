@@ -64,6 +64,7 @@ The RRDTool installable package is available as .deb package for LinuxMint. It c
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
 
 ```# sudo mkdir /var/opt/clensensors```
+
 ```# sudo chown clensensors.clensensors /var/opt/clensensors```
  
 ### Other useful SW components
@@ -106,10 +107,12 @@ To create the Collector installation structure, the released package file must b
 Next, the file can be uncompressed
 
 ```# cd /opt```
+
 ```# sudo tar xzf ClEn_Collector-<version>.tgz```
 
 Next, the directory permissions can be applied
 
 ```# sudo chown -R clensensors.clensensors ./clensensors```
+
 ```# sudo chmod -R 755 ./clensensors```
 
