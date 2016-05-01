@@ -116,12 +116,12 @@ Next, the directory permissions can be applied
 
 ```# sudo chmod -R 755 ./clensensors```
 
-Next, specific permission may be set inside the installation directories
+Next, specific permission may be set inside the installation directory
 
 ```cd clensensors```
 
 ```# chmod uga-x *.* LICENSE cfg/*.*```
 
-## ClEnSecnors Collector configuration
+## ClEnSensors Collector configuration
 
 *TBW*
