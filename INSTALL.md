@@ -84,6 +84,32 @@ Any IDE tool can be chosed at own preference. the **Idle** development tool has 
  
 ```# sudo apt-get install idle``` 
 
-## Control Node SW installation
+## ClEnSecnors Collector installation
+The **ClEnSensors Collector** can be installed from the released package file named **ClEn_Collector-<version>.tgz**.
+The package file is a tar compressed file including the pre-built software structure.
 
-TBW
+### Insatallation directory
+The Collector can be installed inside any directory where the "clensensors" user has write and execution permission.
+However, it may be desirable to install the software into commonly used locations in practice. This manual assumes that the installation directory will be created under the **/opt** directory, even though this is not a strict requirement.
+
+**WARNING**: In case the software is replacing an existing version of the Collector, the installation package **will OVERWITE everything, including the configuration files!**. Since one doesn't generally want to lose the existing configuration, then it is mandatory to rename the existing installation directory before proceeding with the installation, like:
+
+```# sudo mv clensensors clensensors_ORIG``` 
+
+### Package installation
+All the commands in this section shall be executed by the "clensensors" user, as it has been created with admin permissions in the OS.
+
+To create the Collector installation structure, the released package file must be copied under **/opt**:
+
+```# sudo cp ClEn_Collector-<version>.tgz /opt```
+
+Next, the file can be uncompressed
+
+```# cd /opt```
+```# sudo tar xzf ClEn_Collector-<version>.tgz```
+
+Next, the directory permissions can be applied
+
+```# sudo chown -R clensensors.clensensors ./clensensors```
+```# sudo chmod -R 755 ./clensensors```
+
