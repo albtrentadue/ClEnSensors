@@ -118,7 +118,7 @@ Next, the directory permissions can be applied
 
 Next, specific permission may be set inside the installation directory
 
-```cd clensensors```
+```# cd clensensors```
 
 ```# chmod uga-x *.* LICENSE cfg/*.*```
 
