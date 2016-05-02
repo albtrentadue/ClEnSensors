@@ -242,4 +242,4 @@ $database = "emoncms";
 
 At the end, browsing the initial page of EmonCMS should show the main login page:
 
-http://localhost/emoncms
+http://localhost/emoncms/
