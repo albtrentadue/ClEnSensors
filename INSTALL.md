@@ -24,12 +24,12 @@ It is recommended that the Control Node SW is not run as "root" user. A specific
 
 The SW owner can be created using the Linux command
 
-```# sudo useradd -s /bin/bash clensensors```
+```$ sudo useradd -s /bin/bash clensensors```
 
 The "clensensors" user should be configured as a system administrator and must be enabled to use the serial communication.
 Then it must belong to the following standard Linux user groups: adm, sudo, dialout, plugdev, netdev. To ensure the group belonging, the following command can be used:
 
-```# sudo usermod -G adm,sudo,dialout,plugdev,netdev clensensors```
+```$ sudo usermod -G adm,sudo,dialout,plugdev,netdev clensensors```
 
 After creation of the "clensensors" user, it is recommended to login to the Linux system using this user.
 
@@ -38,7 +38,7 @@ The Control Node has been implemented in **Python 2.7**, therefore this version 
 
 The current version of Python can be verified by the command
 
-```# /usr/bin/python -V```
+```$ /usr/bin/python -V```
 
 Python 3 is in general not supported. The Control Node has not been tested with Python 3 an therefore unknown problems may arise. 
 
@@ -50,7 +50,7 @@ The following standard python library is required:
 
 To test the availability of PySerial library, the following command must terminate with no error messages:
 
-```# python -c "import serial"```
+```$ python -c "import serial"```
 
 If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site https://pypi.python.org/pypi/pyserial/2.7
 
@@ -59,13 +59,14 @@ The Control Node uses the **RRDTool** round-robin database tool as local buffer 
 
 The RRDTool installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
-```# sudo apt-get install rrdtool```
+```$ sudo apt-get install rrdtool```
 
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
 
-```# sudo mkdir /var/opt/clensensors```
-
-```# sudo chown clensensors.clensensors /var/opt/clensensors```
+```
+$ sudo mkdir /var/opt/clensensors
+$ sudo chown clensensors.clensensors /var/opt/clensensors
+```
  
 ### Other useful SW components
 Besides the necessary SW components, it is recommended to install on the Linux box the following utilities that may be needed to troubleshoot the system in case of problems.
@@ -106,21 +107,24 @@ To create the Collector installation structure, the released package file must b
 
 Next, the file can be uncompressed
 
-```$ cd /opt```
-
-```$ sudo tar xzf ClEn_Collector-{version}.tgz```
+```
+$ cd /opt
+$ sudo tar xzf ClEn_Collector-{version}.tgz
+```
 
 Next, the directory permissions can be applied
 
-```$ sudo chown -R clensensors.clensensors ./clensensors```
-
-```$ sudo chmod -R 755 ./clensensors```
+```
+$ sudo chown -R clensensors.clensensors ./clensensors
+$ sudo chmod -R 755 ./clensensors
+```
 
 Next, specific permission may be set inside the installation directory
 
-```$ cd clensensors```
-
-```$ chmod uga-x *.* LICENSE cfg/*.*```
+```
+$ cd clensensors
+$ chmod uga-x *.* LICENSE cfg/*.*
+```
 
 ## ClEnSensors Collector configuration
 
@@ -141,21 +145,21 @@ The installation of the dashboard is indeed the installation of EmonCMS, then it
 EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
 `apache2, mysql-server, mysql-client, php5, libapache2-mod-php5, php5-mysql, php5-curl, php-pear, php5-dev, php5-mcrypt, php5-json, git-core, redis-server, build-essential, ufw, ntp`
 
+**NOTE**: at installation time, MySQL Server prompts for the 'root' superuser password. This password **must be kept at hand** for future uses.
+
 The **dio**, **redis** and **swift mailer** php5 libraries are required. They can be installed by means of the pecl/pear utilities:
 
-```$ sudo pear channel-discover pear.swiftmailer.org```
+```
+$ sudo pear channel-discover pear.swiftmailer.org 
+$ sudo pecl install channel://pecl.php.net/dio-0.0.6 redis swift/swift
 
-```$ sudo pecl install channel://pecl.php.net/dio-0.0.6 redis swift/swift```
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/apache2/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/cli/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/apache2/conf.d/20-redis.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/cli/conf.d/20-redis.ini'
 
-```$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/apache2/conf.d/20-dio.ini'```
-
-```$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/cli/conf.d/20-dio.ini'```
-
-```$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/apache2/conf.d/20-redis.ini'```
-
-```$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/cli/conf.d/20-redis.ini'```
-
-```$ sudo a2enmod rewrite```
+$ sudo a2enmod rewrite
+```
 
 **NOTE**: Some linux versions may suffer from a bug that makes the "pecl install" fail during the installation phase of the libraries. In case the pecl command should fail, claiming a failed extraction of a compressed archive, you may want to download the uncompressed versions, by means of the **-Z option**:
 
@@ -174,11 +178,68 @@ The easiest way to install these files is to clone the git repository from withi
 One (but not the only) choice is execute the git clone from the target directory, using these steps:
 * Create the target directory "emoncms" under /var/www (the apache home direcrory):
 
-```$ cd /var/www```
+```
+$ cd /var/www
+$ sudo mkdir emoncms
+$ cd emoncms
+$ sudo git clone -b stable https://github.com/emoncms/emoncms.git
+```
 
-```$ sudo mkdir emoncms```
+Add on components must be installed inside the PHP structure
 
-```$ cd emoncms```
+```
+cd /var/www/emoncms/Modules
 
-```$ sudo git clone -b stable https://github.com/emoncms/emoncms.git```
+git clone https://github.com/emoncms/dashboard.git
+git clone https://github.com/emoncms/app.git
+```
 
+EmonCMS requires data repositories to be created in the filesystem:
+
+```
+sudo mkdir /var/lib/phpfiwa
+sudo mkdir /var/lib/phpfina
+sudo mkdir /var/lib/phptimeseries
+
+sudo chown www-data:root /var/lib/phpfiwa
+sudo chown www-data:root /var/lib/phpfina
+sudo chown www-data:root /var/lib/phptimeseries
+```
+
+## Creating the database in MySQL
+
+MySQL is used by EmonCMS as main data storage system. The installation procedure only requires to install the database area. The actual data objects are created automatically by the PHP code of EmonCMS.
+
+Enter the MySQL engine as 'root' (requires the MySQL 'root' password):
+
+```$ mysql -u root -p```
+
+Then create database area and application user:
+
+```
+mysql> CREATE DATABASE emoncms;
+
+mysql> CREATE USER 'emoncms'@'localhost' IDENTIFIED BY '<password>';
+mysql> GRANT ALL ON emoncms.* TO 'emoncms'@'localhost';
+mysql> flush privileges;
+
+mysql> exit
+```
+**NOTE**: The emoncms user's password must be kept for the next step of the configuration and for future database maintenance operatios.
+
+## Setting database settings in the PHP code
+
+The file **"default.settings.php"** inside the **/var/www/emoncms** directory should be copied into a file named **"settings.php"**, then the copied file can be configured for the actual database settings:
+
+```
+$username = "emoncms";
+$password = "<password>";
+$server   = "localhost";
+$database = "emoncms";
+```
+
+## Testing the configuration
+
+At the end, browsing the initial page of EmonCMS should show the main login page:
+
+http://localhost/emoncms
