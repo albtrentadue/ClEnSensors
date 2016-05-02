@@ -185,14 +185,14 @@ $ cd emoncms
 $ sudo git clone -b stable https://github.com/emoncms/emoncms.git
 ```
 
-Since the EmonCMS PHP application has been installed outside the root directory of the Apache2 web server (/var/www/html) , a symbolic link must be created in the root directory pointing to the emoncms base dir:
+* Since the EmonCMS PHP application has been installed outside the root directory of the Apache2 web server (/var/www/html) , a symbolic link must be created in the root directory pointing to the emoncms base dir:
 
 ```
 $ cd /var/www/html
 $ sudo ln -s ../emoncms
 ```
 
-Add on components must be installed inside the PHP structure
+* Add on components must be installed inside the PHP structure
 
 ```
 cd /var/www/emoncms/Modules
@@ -201,7 +201,7 @@ git clone https://github.com/emoncms/dashboard.git
 git clone https://github.com/emoncms/app.git
 ```
 
-EmonCMS requires data repositories to be created in the filesystem:
+* EmonCMS requires data repositories to be created in the filesystem:
 
 ```
 sudo mkdir /var/lib/phpfiwa
