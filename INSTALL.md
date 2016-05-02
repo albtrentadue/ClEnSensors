@@ -185,6 +185,13 @@ $ cd emoncms
 $ sudo git clone -b stable https://github.com/emoncms/emoncms.git
 ```
 
+Since the EmonCMS PHP application has been installed outside the root directory of the Apache2 web server (/var/www/html) , a symbolic link must be created in the root directory pointing to the emoncms base dir:
+
+```
+$ cd /var/www/html
+$ sudo ln -s ../emoncms
+```
+
 Add on components must be installed inside the PHP structure
 
 ```
