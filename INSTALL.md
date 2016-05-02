@@ -102,26 +102,83 @@ All the commands in this section shall be executed by the "clensensors" user, as
 
 To create the Collector installation structure, the released package file must be copied under **/opt**:
 
-```# sudo cp ClEn_Collector-<version>.tgz /opt```
+```$ sudo cp ClEn_Collector-<version>.tgz /opt```
 
 Next, the file can be uncompressed
 
-```# cd /opt```
+```$ cd /opt```
 
-```# sudo tar xzf ClEn_Collector-{version}.tgz```
+```$ sudo tar xzf ClEn_Collector-{version}.tgz```
 
 Next, the directory permissions can be applied
 
-```# sudo chown -R clensensors.clensensors ./clensensors```
+```$ sudo chown -R clensensors.clensensors ./clensensors```
 
-```# sudo chmod -R 755 ./clensensors```
+```$ sudo chmod -R 755 ./clensensors```
 
 Next, specific permission may be set inside the installation directory
 
-```# cd clensensors```
+```$ cd clensensors```
 
-```# chmod uga-x *.* LICENSE cfg/*.*```
+```$ chmod uga-x *.* LICENSE cfg/*.*```
 
 ## ClEnSensors Collector configuration
 
 *TBW*
+
+# Management Software Installation
+
+In the PoC2 version of ClEnSensors, the main software component in the Management Node is the **Dashboard**, and it is implemented by means od **EmonCMS**.
+
+**EmonCMS** - https://emoncms.org/ - is an open source monitoring dashboard system and an integral part of the [OpenEnergyMonitor](https://openenergymonitor.org/emon/) open source project.
+
+Within the ClEnSensors architecture the **Management Node** is logically separated from the **Control Node**. However it is possible to have both nodes installed on the same physical processing unit (card, PC, server...)-
+
+The installation of the dashboard is indeed the installation of EmonCMS, then it is possible to follow the [documentation](https://github.com/emoncms/emoncms/blob/master/docs/LinuxInstall.md) available in the [EmonCMS project inside GitHub](https://github.com/emoncms/emoncms). However, the key steps are summrized in this manual, in case this documentation should be printed and thus not possible to browse the hyperlink to the project.
+
+## SW Requirements
+
+EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
+`apache2, mysql-server, mysql-client, php5, libapache2-mod-php5, php5-mysql, php5-curl, php-pear, php5-dev, php5-mcrypt, php5-json, git-core, redis-server, build-essential, ufw, ntp`
+
+The **dio**, **redis** and **swift mailer** php5 libraries are required. They can be installed by means of the pecl/pear utilities:
+
+```$ sudo pear channel-discover pear.swiftmailer.org```
+
+```$ sudo pecl install channel://pecl.php.net/dio-0.0.6 redis swift/swift```
+
+```$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/apache2/conf.d/20-dio.ini'```
+
+```$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/cli/conf.d/20-dio.ini'```
+
+```$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/apache2/conf.d/20-redis.ini'```
+
+```$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/cli/conf.d/20-redis.ini'```
+
+```$ sudo a2enmod rewrite```
+
+**NOTE**: Some linux versions may suffer from a bug that makes the "pecl install" fail during the installation phase of the libraries. In case the pecl command should fail, claiming a failed extraction of a compressed archive, you may want to download the uncompressed versions, by means of the **-Z option**:
+
+```sudo pecl install -Z channel://pecl.php.net/dio-0.0.6 redis swift/swift```
+
+### Apache2 web server configuration
+There are few changes to apply to the Apache Web Server configuration: the **AllowOverride All** must be specified in the `<Directory /var/www/>` and `<Directory />`
+
+At the end, the Apache web server needs to be restarted to include the recent changes.
+
+```$ sudo service apache2 restart```
+
+### Installing EmonCMS files
+EmonCMS is a structure of php5 files that need to be installed inside the pages served by Apache.
+The easiest way to install these files is to clone the git repository from within one of the directory served by the web server.
+One (but not the only) choice is execute the git clone from the target directory, using these steps:
+* Create the target directory "emoncms" under /var/www (the apache home direcrory):
+
+```$ cd /var/www```
+
+```$ sudo mkdir emoncms```
+
+```$ cd emoncms```
+
+```$ sudo git clone -b stable https://github.com/emoncms/emoncms.git```
+
