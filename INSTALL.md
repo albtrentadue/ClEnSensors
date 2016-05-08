@@ -195,10 +195,10 @@ $ sudo ln -s ../emoncms
 * Add on components must be installed inside the PHP structure
 
 ```
-cd /var/www/emoncms/Modules
+$ cd /var/www/emoncms/Modules
 
-git clone https://github.com/emoncms/dashboard.git
-git clone https://github.com/emoncms/app.git
+$ sudo git clone https://github.com/emoncms/dashboard.git
+$ sudo git clone https://github.com/emoncms/app.git
 ```
 
 * EmonCMS requires data repositories to be created in the filesystem:
