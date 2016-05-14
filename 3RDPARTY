@@ -1,0 +1,25 @@
+This file describes the licensing compliance with respect to other Open Source software components.
+
+EmonCMS
+=======
+The PoC2 version of ClEnSensors uses EmOnCMS as dashboard system - https://emoncms.org/
+EmonCMS project is located in https://github.com/emoncms/emoncms
+EmonCMS is distributed under AGPL as described into https://github.com/emoncms/emoncms/blob/master/COPYRIGHT.txt
+
+RRDTool
+=======
+ClEnSensors uses RRDTool as internal measurement buffer
+RRDTool website is located in http://oss.oetiker.ch/rrdtool/
+RRDTool is distributed under GPLv2 as described into http://oss.oetiker.ch/rrdtool/license.en.html
+
+Dreamfactory
+============
+ClEnSensors PoC2 may use the Free version DreamFactory as REST API engine - https://www.dreamfactory.com/
+DreamFactory project is located in https://github.com/dreamfactorysoftware/dreamfactory
+The free version of DreamFactory is distributed under Apache2 as described in https://github.com/dreamfactorysoftware/dreamfactory/blob/master/LICENSE 
+
+Freeboard
+=========
+ClEnSensors PoC2 may use Freeboard as dashboard system - https://freeboard.io/
+Freeboard project is locatd in https://github.com/Freeboard/freeboard
+Freeboard is distributed under the MIT License as described in https://github.com/Freeboard/freeboard/blob/master/LICENSE
