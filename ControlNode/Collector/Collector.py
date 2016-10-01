@@ -21,7 +21,7 @@
 """
 
 #"serial" is imported from the external module pySerial / https://pythonhosted.org/pyserial/
-import sys, serial, time, threading, copy
+import sys, time, threading, copy
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -47,11 +47,15 @@ class Collector (threading.Thread):
     # The static configuration object
     __config = None
 
+    # The application MQTT Handler
+    __mqtt_handler = None
+
     #Initializer
-    def __init__(self, config, serial_port, RRD_if):
+    def __init__(self, config, mqtt_handler, RRD_if):
         threading.Thread.__init__(self)
         Collector.__config = config
-        self.__serial_port = serial_port
+        mqtt_handler.add_subscription('clen/collector')
+        Collector.__mqtt_handler = mqtt_handler
         # The RRD interface
         self.__RRD_if = RRD_if
         
@@ -63,7 +67,7 @@ class Collector (threading.Thread):
                 hdlr = logging.StreamHandler(sys.stdout)
         else:
             hdlr = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
         hdlr.setFormatter(formatter)
         Collector.__logger.addHandler(hdlr)
         loglevel=eval('logging.' + config.LOG_LEVEL)
@@ -74,10 +78,10 @@ class Collector (threading.Thread):
         for nd in config.get_configured_nodes():
             self.empty_measures[nd] = {tg : 'U' for tg in config.get_configured_tags_by_node(nd)}
 
+        # MQTT relays to serial or not
+        self.mqtt_relayed = config.MQTT_RELAYED
         # The list of the IDs of discovered sensor nodes
         self.sensor_nodes = []
-        # The serial interface to communicate to sensors
-        self.serial_if = None
         # The last collected timestamp
         self.last_collected_ts = 0
         # The thread safety lock
@@ -89,26 +93,10 @@ class Collector (threading.Thread):
     The thread runner
     """
     def run(self):
-        self._create_serial()
         self._discover()
+        self._send_configs()
         while self.keep_on:
             self._fetch()
-                
-	
-    """
-    Open the serial communication to the XBee
-    """
-    def _create_serial(self):
-            
-        #Serial setup
-        try:
-            # Open the serial communication
-            self.serial_if = serial.Serial(port=self.__serial_port, baudrate=Collector.__config.SERIAL_BAUDRATE)
-            Collector.__logger.info('Serial port ' + self.__serial_port + ' created.')
-        except:
-            Collector.__logger.error('Error when opening serial:' + str(sys.exc_info()[1]))
-            sys.exit(1)
-		
 
     """
     Detects the Sensor Nodes in range.
@@ -121,32 +109,28 @@ class Collector (threading.Thread):
         while self.keep_on :
             Collector.__logger.info('Starting new discovering cycle')
             #Sends out the broadcast message
-            self._send_command(BROADCAST_ID, 'IDNREQ')
-            #Collects the responses. 
-            time.sleep(1)
-            #Responses are collected for a time interval equal to 2*MAX_SENSOR_NODES + 1	
-            time_limit = time.time()+ 2 * (Collector.__config.MAX_SENSOR_NODES + 3)
+            discover_wait = 2 * (Collector.__config.MAX_SENSOR_NODES + 3)
+            self._send_command(BROADCAST_ID, 'IDNREQ', '', discover_wait * 1000)
+            time_limit = time.time()+ discover_wait
             while self.keep_on and time.time() < time_limit:
+                time.sleep(0.2)
                 rx_msg = self._receive_msg()
                 if rx_msg != None:
                     discovered_id = rx_msg['SENDER_ID']
                     if not discovered_id in self.sensor_nodes:
                         self.sensor_nodes.append(discovered_id)
                         Collector.__logger.info('Discovered new sensor node with ID:' + discovered_id)
-                        #Sends the config info to the discovered node
-                        time.sleep(0.2)
-                        self._send_node_config(discovered_id)
                     else:
                         Collector.__logger.warning('Anomaly: duplicate discovery of node:' + discovered_id)
-                time.sleep(0.1)
-            Collector.__logger.debug('Ending discovering cycle after {0} seconds'.format(Collector.__config.MAX_SENSOR_NODES + 2))			
+                        
+            Collector.__logger.debug('Ending discovering cycle after {0} seconds'.format(discover_wait))			
             
             if len(self.sensor_nodes) > 0:
                 break
             else:
-                #No sensor found : wait 1 minute
-                Collector.__logger.info('No sensor found in range. Waiting 1 minute')
-                for i in range(30):
+                #No sensor found : wait some time
+                Collector.__logger.info('No sensor found in range. Waiting ...')
+                for i in range(15):
                     time.sleep(2)
                     if not self.keep_on:
                         break
@@ -156,21 +140,24 @@ class Collector (threading.Thread):
                 sys.exit(1)
 
     """
-    Sends a configuration message to a node, containing the currently supported configuration info:
+    Sends the configuration message to all discovered nodes,
+    containing the currently supported configuration info:
     TG: time granularity configured for the system
     """
-    def _send_node_config(self, node_id):
-        Collector.__logger.info('Sending the config message to node ' + node_id)
-        #Sends the CONFIG message
-        self._send_command(node_id, 'CONFIG', 'TG'+str(Collector.__config.TIME_INTERVAL / 60))
-        time.sleep(0.9)
-        rx_msg = self._receive_msg()
-        if rx_msg != None:
-            if rx_msg['MSG_TYPE'] == 'CFGACK' and rx_msg['SENDER_ID'] == node_id:
-                #Only a basic logging for now...
-                Collector.__logger.info('Node ' + node_id + ' successfully configured.')
-        else:
-            Collector.__logger.error('rx_msg is None after sending config message')
+    def _send_configs(self):
+        for node_id in self.sensor_nodes:
+            Collector.__logger.info('Sending the config message to node ' + node_id)
+            #Sends the CONFIG message
+            self._send_command(node_id, 'CONFIG', 'TG'+str(Collector.__config.TIME_INTERVAL / 60), 600)
+            # Wait for a time after which there must be the answer, otherwise there is a problem!
+            time.sleep(0.8)
+            rx_msg = self._receive_msg()
+            if rx_msg != None:
+                if rx_msg['MSG_TYPE'] == 'CFGACK' and rx_msg['SENDER_ID'] == node_id:
+                    #Only a basic logging for now...
+                    Collector.__logger.info('Node ' + node_id + ' successfully configured.')
+            else:
+                Collector.__logger.error('No response received after sending config message')
                 
                         
     """
@@ -229,7 +216,7 @@ class Collector (threading.Thread):
 
         for sn in self.sensor_nodes :                        
             self._send_command(sn, 'QRYMSR')
-            time.sleep(0.6)
+            time.sleep(0.8)
             rx_msg = self._receive_msg()
             if rx_msg != None:
                 valued_measures = self._calibrate(sn, self._extract_measures(rx_msg['MSG_DATA']))
@@ -280,21 +267,21 @@ class Collector (threading.Thread):
             self.__RRD_if.store_measures(timestamp, node_id, measures[node_id])                        
 
     """
-    Sends a string command to nodes via the serial interface
+    Sends a string command to nodes via MQTT
+    Topic to be used is "nodes"
     """
-    def _send_command(self, dest, cmd, msg_data=''): 
+    def _send_command(self, dest, cmd, msg_data='', resp_wait=600): 
         msg = MSG_TERMINATOR + CONTROL_ID + dest + cmd + msg_data + MSG_TERMINATOR
         Collector.__logger.debug('Sending:' + msg + ' to ' + dest)
-        
-        try:
-            self.serial_if.write(msg)
-            self.serial_if.flush()
-        except:
-            Collector.__logger.error('Error when writing to serial:' + str(sys.exc_info()[1]))
-	
+        if self.mqtt_relayed:
+            # If relayed on other transport, destination is parsed from the pyload
+            # and the use of a specific topic per node is not needed
+            Collector.__mqtt_handler.send_mqtt_message_with_header('clen/nodes', msg, 'COMMAND', 'clen/collector', resp_wait)
+	else:
+            Collector.__mqtt_handler.send_mqtt_message(msg, 'clen/nodes/' + dest)
 
     """
-    Receives a new message from the serial source
+    Receives a new message from nodes through MQTT
     Returns a dictionary where elements are:
     m['SENDER_ID']: the id of the sender
     m['DEST_ID']: the id of the destination
@@ -302,30 +289,20 @@ class Collector (threading.Thread):
     m['MSG_DATA']: the data payload
     """
     def _receive_msg(self):
-        #Empty string if nothing arrived
-        rx_ser = ''
         msg = None
-                        
-        try:
-            while self.serial_if.inWaiting() > 0:
-                rx_ser += self.serial_if.read(1)
-                time.sleep(0.001)
-        except:
-            Collector.__logger.error('Error when reading from serial:' + str(sys.exc_info()[1]))
-                
-        l = len(rx_ser)
-        if l > 0:
-            if rx_ser[0] != MSG_TERMINATOR or rx_ser[l-1] != MSG_TERMINATOR:
-                Collector.__logger.warning('Received incomplete message:' + rx_ser + '. Ignored.')
-            else:
-                Collector.__logger.debug('Received message:' + rx_ser)
-                msg = dict([('SENDER_ID', rx_ser[1:4]), ('DEST_ID', rx_ser[4:7]), ('MSG_TYPE', rx_ser[7:13]), ('MSG_DATA', '')])
+        msg_fields = Collector.__mqtt_handler.receive_mqtt_msg('clen/collector')
+        if len(msg_fields):
+            Collector.__logger.debug('Header fields:' + str(msg_fields))
+            if msg_fields[1] == 'RESPONSE' :
+                rx_msg = msg_fields[4]
+                msg = dict([('SENDER_ID', rx_msg[1:4]), ('DEST_ID', rx_msg[4:7]), ('MSG_TYPE', rx_msg[7:13]), ('MSG_DATA', '')])
+                l = len(rx_msg)
                 if l>14:
-                    msg['MSG_DATA'] = rx_ser[13:l-1]
-                                
-        if msg != None :
-            Collector.__logger.debug('Messages fields:' + str(msg))
-                
+                    msg['MSG_DATA'] = rx_msg[13:l-1]
+
+        if msg != None:
+            Collector.__logger.debug('Message list:' + str(msg))
+            
         return msg
 
     """

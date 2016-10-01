@@ -21,10 +21,10 @@
 # along with ClEnSensors.  If not, see <http://www.gnu.org/licenses/>.
 
 # Argument check
-if [ $# -ne 1 ]; then
-    echo "Missing serial USB argument. Exiting."
-    exit 1
-fi
+#if [ $# -ne 1 ]; then
+#    echo "Missing serial USB argument. Exiting."
+#    exit 1
+#fi
 
 echo "Starting the Collector in background..."
 

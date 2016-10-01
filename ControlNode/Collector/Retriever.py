@@ -65,7 +65,7 @@ class Retriever (threading.Thread):
 	else:
             hdlr = logging.StreamHandler(sys.stdout)
 		
-	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+	formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 	hdlr.setFormatter(formatter)
 	Retriever.logger.addHandler(hdlr)
 	loglevel=eval('logging.' + config.LOG_LEVEL)
@@ -88,7 +88,10 @@ class Retriever (threading.Thread):
                 data_sent = self._retrieve(data_time)
             if data_time == 0 or not data_sent:
                 Retriever.logger.info('Retriever sleeps waiting. last_sent_ts is:' + str(self.last_sent_ts))
-                time.sleep(Retriever.config.TIME_INTERVAL)
+                for i in range(int(Retriever.config.TIME_INTERVAL/10)):
+                    time.sleep(10)
+                    if not self.keep_on:
+                        break
 
                         
     """

@@ -56,7 +56,7 @@ class RRD ():
                 hdlr = logging.StreamHandler(sys.stdout)
         else:
             hdlr = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
         hdlr.setFormatter(formatter)
         RRD.__logger.addHandler(hdlr)
         loglevel=eval('logging.' + config.LOG_LEVEL)

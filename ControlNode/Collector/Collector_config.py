@@ -32,7 +32,10 @@ CFG_DEFAULTS = {
 	'log_level' : 'INFO',
 	'time_interval' : '60',
 	'max_sensor_nodes' : '30',
-	'rest_server_address' : '127.0.0.1:8081',
+	'rest_server_address' : 'localhost:8081',
+        'mqtt_server_address' : 'localhost',
+        'mqtt_port' : '1883',
+        'mqtt_relayed' : 'False',
         'rrd_base_dir' : '/var/opt/clensensors',
         'rrd_length' : '10800'
 }
@@ -75,6 +78,9 @@ class Collector_config:
                 self.REST_APP_PWD = config.get('rest','rest_app_pwd')
                 self.DF_APP = config.get('rest','df_app')
                 self.API_KEY = config.get('rest','api_key')
+                self.MQTT_SERVER_ADDRESS = config.get('mqtt','mqtt_server_address')
+                self.MQTT_PORT = config.get('mqtt','mqtt_port')
+                self.MQTT_RELAYED = config.getboolean('mqtt','mqtt_relayed')
                 self.RRD_BASE_DIR = config.get('rrd','rrd_base_dir')
                 self.RRD_LENGTH = config.getint('rrd','rrd_length')
 
