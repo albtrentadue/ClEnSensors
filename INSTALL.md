@@ -54,6 +54,16 @@ To test the availability of PySerial library, the following command must termina
 
 If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site https://pypi.python.org/pypi/pyserial/2.7
 
+The following external python library is required:
+* **Paho-1.1**
+
+To test the availability of PySerial library, the following command must terminate with no error messages:
+
+```$ python -c "import paho.mqtt.client as mqtt"```
+
+If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site http://www.eclipse.org/paho
+
+
 ### RRD Tool
 The Control Node uses the **RRDTool** round-robin database tool as local buffer storage system. RRDTool is an open source storage system suitable for the storage and analysis of numeric time series. RRDTool reference website is http://oss.oetiker.ch/rrdtool/
 
@@ -67,6 +77,25 @@ The measures buffer storage physical location can be chosen within any directory
 $ sudo mkdir /var/opt/clensensors
 $ sudo chown clensensors.clensensors /var/opt/clensensors
 ```
+
+### MQTT Server Mosquitto
+MQTT middleware needs a central MQTT Broker to dispatch messages. The MQTT Broker used in ClEnSensor is Mosquitto.
+
+Mosquitto installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```$ sudo apt-get install mosquitto```
+
+The Mosquitto broker is installed as a Linux service. Its status can be verified as usual:
+
+```$ sudo service mosquitto status```
+
+Mosquitto configuration file is in /etc/mosquitto/mosquitto.conf
+
+There are many configuration options available for the Mosquitto broker. The most relevant are settings related to SSL use to send encrypted messages. Please refer to Mosquitto documentation for more information on the website http://mosquitto.org
+
+It is advisable to install also the mosquitto utilities to test and debug the messages exchanged by the modules. Such utilities are in the mosquitto-clients package:
+
+```$ sudo apt-get install mosquitto-clients```
  
 ### Other useful SW components
 Besides the necessary SW components, it is recommended to install on the Linux box the following utilities that may be needed to troubleshoot the system in case of problems.
@@ -208,9 +237,9 @@ sudo mkdir /var/lib/phpfiwa
 sudo mkdir /var/lib/phpfina
 sudo mkdir /var/lib/phptimeseries
 
-sudo chown www-data:root /var/lib/phpfiwa
-sudo chown www-data:root /var/lib/phpfina
-sudo chown www-data:root /var/lib/phptimeseries
+sudo chown www-data.root /var/lib/phpfiwa
+sudo chown www-data.root /var/lib/phpfina
+sudo chown www-data.root /var/lib/phptimeseries
 ```
 
 ## Creating the database in MySQL
