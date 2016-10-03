@@ -18,6 +18,7 @@ There are no specific HW requirements for the Control Node. However, the process
 The Control Node must have a GNU/Linux kernel 3 Operative System (OS). It is possible to use various different flavours of Linux, provided that they support the software components described in the following sections.
 
 The current version of the Control Node SW has been integrated using **LinuxMint 17.3 "Rosa" - GNULinux kernel 3.19.0**.
+Later versions of LinuxMint are expected to work as well.
 
 ### The SW owner OS user
 It is recommended that the Control Node SW is not run as "root" user. A specific owner of the Control Node SW should be created in the OS. The system has been integrated with the installation directory owned by a user named "**clensensors**" but of course any name can be chosen. The documentation will assume in the following that the "clensensors" user has been created.
@@ -61,7 +62,7 @@ To test the availability of PySerial library, the following command must termina
 
 ```$ python -c "import paho.mqtt.client as mqtt"```
 
-If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site http://www.eclipse.org/paho
+If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the Paho library site http://www.eclipse.org/paho
 
 
 ### RRD Tool
