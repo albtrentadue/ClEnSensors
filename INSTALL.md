@@ -143,7 +143,7 @@ The installation of the dashboard is indeed the installation of EmonCMS, then it
 ## SW Requirements
 
 EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
-`apache2, mysql-server, mysql-client, php5, libapache2-mod-php5, php5-mysql, php5-curl, php-pear, php5-dev, php5-mcrypt, php5-json, git-core, redis-server, build-essential, ufw, ntp`
+`apache2, mysql-server, mysql-client, php, libapache2-mod-php, php-mysql, php-curl, php-pear, php-dev, php-mcrypt, php-json, git-core, redis-server, build-essential, ufw, ntp`
 
 **NOTE**: at installation time, MySQL Server prompts for the 'root' superuser password. This password **must be kept at hand** for future uses.
 
