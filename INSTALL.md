@@ -145,6 +145,8 @@ The installation of the dashboard is indeed the installation of EmonCMS, then it
 EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
 `apache2, mysql-server, mysql-client, php, libapache2-mod-php, php-mysql, php-curl, php-pear, php-dev, php-mcrypt, php-json, git-core, redis-server, build-essential, ufw, ntp`
 
+**NOTE**: Emoncms website indicates 5.x as version to be uses. However newer versions of Ubuntu/Mint only support PHP-7 in relation to the `pear` package manager, therefore it is recommended to use the version 7.0 that is expected to work the same. 
+
 **NOTE**: at installation time, MySQL Server prompts for the 'root' superuser password. This password **must be kept at hand** for future uses.
 
 The **dio**, **redis** and **swift mailer** php5 libraries are required. They can be installed by means of the pecl/pear utilities:
@@ -153,10 +155,10 @@ The **dio**, **redis** and **swift mailer** php5 libraries are required. They ca
 $ sudo pear channel-discover pear.swiftmailer.org 
 $ sudo pecl install channel://pecl.php.net/dio-0.0.6 redis swift/swift
 
-$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/apache2/conf.d/20-dio.ini' 
-$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/cli/conf.d/20-dio.ini' 
-$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/apache2/conf.d/20-redis.ini' 
-$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/cli/conf.d/20-redis.ini'
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php/7.0/apache2/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php/7.0/cli/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php/7.0/apache2/conf.d/20-redis.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php/7.0/cli/conf.d/20-redis.ini'
 
 $ sudo a2enmod rewrite
 ```
