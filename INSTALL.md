@@ -45,7 +45,7 @@ Python 3 is in general not supported. The Control Node has not been tested with 
 
 **IMPORTANT**: if both versions 2.7 and 3 are installed in the Linux box, then the system must be configured to run Python 2.7 as default
 
-Python native development libraries are needed to allow installation of the python libraries listeb below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+Python native development libraries are needed to allow installation of the python libraries listed below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
 ```# sudo apt-get install python-dev```
 
@@ -81,10 +81,12 @@ To test the availability of RRDTool Python library, the following command must t
 
 ```$ python -c "import rrdtool"```
 
-If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the RRDTool site http://oss.oetiker.ch/rrdtool/prog/rrdpython.en.html
+If the library should be missing, it can be installed by means of the **python-rrdtool** package . The installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```$ sudo apt-get install python-rrdtool```
+
 
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
-
 ```
 $ sudo mkdir /var/opt/clensensors
 $ sudo chown clensensors.clensensors /var/opt/clensensors
