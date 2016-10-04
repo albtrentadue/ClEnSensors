@@ -44,6 +44,11 @@ Python 3 is in general not supported. The Control Node has not been tested with 
 
 **IMPORTANT**: if both versions 2.7 and 3 are installed in the Linux box, then the system must be configured to run Python 2.7 as default
 
+Python native development libraries are needed to allow installation of the python libraries listeb below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```# sudo apt-get install python-dev```
+
+
 #### Python Libraries
 The following standard python library is required:
 * **PySerial**
@@ -60,6 +65,14 @@ The Control Node uses the **RRDTool** round-robin database tool as local buffer 
 The RRDTool installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
 ```$ sudo apt-get install rrdtool```
+
+RRDTool will require its python libraries to be installed as well to work with ClEnSensors
+To test the availability of PySerial library, the following command must terminate with no error messages:
+
+```$ python -c "import rrdtool"```
+
+If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the RRDTool site http://oss.oetiker.ch/rrdtool/prog/rrdpython.en.html
+
 
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
 
