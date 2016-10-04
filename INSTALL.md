@@ -45,6 +45,10 @@ Python 3 is in general not supported. The Control Node has not been tested with 
 
 **IMPORTANT**: if both versions 2.7 and 3 are installed in the Linux box, then the system must be configured to run Python 2.7 as default
 
+Python native development libraries are needed to allow installation of the python libraries listeb below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```# sudo apt-get install python-dev```
+
 #### Python Libraries
 The following standard python library is required:
 * **PySerial**
@@ -71,6 +75,13 @@ The Control Node uses the **RRDTool** round-robin database tool as local buffer 
 The RRDTool installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
 ```$ sudo apt-get install rrdtool```
+
+RRDTool will require its python libraries to be installed as well to work with ClEnSensors
+To test the availability of RRDTool Python library, the following command must terminate with no error messages:
+
+```$ python -c "import rrdtool"```
+
+If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the RRDTool site http://oss.oetiker.ch/rrdtool/prog/rrdpython.en.html
 
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
 
@@ -173,7 +184,9 @@ The installation of the dashboard is indeed the installation of EmonCMS, then it
 ## SW Requirements
 
 EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
-`apache2, mysql-server, mysql-client, php5, libapache2-mod-php5, php5-mysql, php5-curl, php-pear, php5-dev, php5-mcrypt, php5-json, git-core, redis-server, build-essential, ufw, ntp`
+`apache2, mysql-server, mysql-client, php, libapache2-mod-php, php-mysql, php-curl, php-pear, php-dev, php-mcrypt, php-json, git-core, redis-server, build-essential, ufw, ntp`.
+
+**NOTE**: Emoncms website indicates 5.x as version to be uses. However newer versions of Ubuntu/Mint only support PHP-7 in relation to the `pear` package manager, therefore it is recommended to use the version 7.0 that is expected to work the same.
 
 **NOTE**: at installation time, MySQL Server prompts for the 'root' superuser password. This password **must be kept at hand** for future uses.
 
@@ -183,10 +196,10 @@ The **dio**, **redis** and **swift mailer** php5 libraries are required. They ca
 $ sudo pear channel-discover pear.swiftmailer.org 
 $ sudo pecl install channel://pecl.php.net/dio-0.0.6 redis swift/swift
 
-$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/apache2/conf.d/20-dio.ini' 
-$ sudo sh -c 'echo "extension=dio.so" > /etc/php5/cli/conf.d/20-dio.ini' 
-$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/apache2/conf.d/20-redis.ini' 
-$ sudo sh -c 'echo "extension=redis.so" > /etc/php5/cli/conf.d/20-redis.ini'
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php/7.0/apache2/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=dio.so" > /etc/php/7.0/cli/conf.d/20-dio.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php/7.0/apache2/conf.d/20-redis.ini' 
+$ sudo sh -c 'echo "extension=redis.so" > /etc/php/7.0/cli/conf.d/20-redis.ini'
 
 $ sudo a2enmod rewrite
 ```
