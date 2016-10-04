@@ -67,7 +67,7 @@ The RRDTool installable package is available as .deb package for LinuxMint. It c
 ```$ sudo apt-get install rrdtool```
 
 RRDTool will require its python libraries to be installed as well to work with ClEnSensors
-To test the availability of PySerial library, the following command must terminate with no error messages:
+To test the availability of RRDTool python library, the following command must terminate with no error messages:
 
 ```$ python -c "import rrdtool"```
 
