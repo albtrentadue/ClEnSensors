@@ -57,8 +57,8 @@ class DreamFactoryRetriever (Retriever):
         # Creazione del session_id
         try:
             #resp = unirest.post("http://"+REST_SERVER_ADDRESS+"/api/v2/user/session", headers = {"X-DreamFactory-Application-Name": DF_APP}, params=json.dumps({ "email":REST_APP_USER, "password":REST_APP_PWD, "remember_me": False }))
-            resp = unirest.post("http://"+Retriever.config.REST_SERVER_ADDRESS+"/api/v2/user/session", headers = {}, params=json.dumps({ "email":Retriever.config.REST_APP_USER, "password":Retriever.config.REST_APP_PWD, "remember_me": False }))
-            self.__rest_session_id=json.loads(resp.raw_body)["session_id"]
+            resp = unirest.post("http://"+Retriever.config.JSON_SERVER_ADDRESS+"/api/v2/user/session", headers = {}, params=json.dumps({ "email":Retriever.config.JSON_APP_USER, "password":Retriever.config.JSON_APP_PWD, "remember_me": False }))
+            DreamFactoryRetriever.__rest_session_id=json.loads(resp.raw_body)["session_id"]
             Retriever.logger.info('Successfully authenticated with DreamFactory. Session ID:' + self.__rest_session_id)
             Retriever.connected = True
         except:
@@ -88,9 +88,9 @@ class DreamFactoryRetriever (Retriever):
                     rest_sensors_api={}
                     rest_sensors_api["resource"]=rec
                     # Store data into DB via REST
-                    #resp = unirest.post("http://" + Retriever.config.REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+Retriever.config.API_KEY+"&session_token="+rest_session_id, headers = {"X-DreamFactory-Application-Name": DF_APP, "X-DreamFactory-Session-Token": rest_session_id}, params=json.dumps(rest_sensors_api))
+                    #resp = unirest.post("http://" + Retriever.config.JSON_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+Retriever.config.API_KEY+"&session_token="+rest_session_id, headers = {"X-DreamFactory-Application-Name": JSON_APP, "X-DreamFactory-Session-Token": reamFactoryRetriever.__rest_session_id}, params=json.dumps(rest_sensors_api))
                     try:
-                        resp = unirest.post("http://" + Retriever.config.REST_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+Retriever.config.API_KEY+"&session_token="+rest_session_id, headers = {}, params=json.dumps(rest_sensors_api))
+                        resp = unirest.post("http://" + Retriever.config.JSON_SERVER_ADDRESS +"/api/v2/thcsensors/_table/thc_misure?api_key="+Retriever.config.API_KEY+"&session_token="+DreamFactoryRetriever.__rest_session_id, headers = {}, params=json.dumps(rest_sensors_api))
                         Retriever.logger.debug('REST Record posted to DB:' + str(rec))
                         retval = True
                     except:

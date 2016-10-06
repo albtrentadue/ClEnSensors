@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ClEnSensors.  If not, see <http://www.gnu.org/licenses/>.
 
-VERSION_STRING="PoC2_rc1"
+VERSION_STRING="V1dev_bld1"
 PACKAGE_BASE_NAME="ClEn_Collector"
 
 # Take the start location as the Collector root source dir
@@ -62,7 +62,8 @@ cp $SOURCE_DIR/*.cfg .
 # Copy the base doc
 cd ..
 cp $SOURCE_DIR/../../GPLv3.txt .
-cp $SOURCE_DIR/../../LICENSE .
+cp $SOURCE_DIR/../../COPYRIGHT .
+cp $SOURCE_DIR/../../3RDPARTY .
 cp $SOURCE_DIR/../../README.md .
 cp $SOURCE_DIR/../../INSTALL.md .
 
@@ -73,3 +74,4 @@ tar czf $PACKAGE_NAME".tgz" $BASE_DIR
 
 cd $SOURCE_DIR
 echo "Collector package $PACKAGE_NAME created."
+

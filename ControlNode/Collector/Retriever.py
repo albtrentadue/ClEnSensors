@@ -34,7 +34,7 @@ TIME_WAIT_SYNC = 30
 """
 The Retriever class implements the process running on the Control Node
 and forwarding measures from the local RRD database to the target
-Management Database through the exposed REST interface
+Management Database through the exposed JSON interface
 """
 class Retriever (threading.Thread):
         
