@@ -308,6 +308,7 @@ String collect_measures()
 {
   String measures = "";
   float ms;
+  int ams;
   
   //Read the temp value from DHT22 sensor - the read can take some time.
   ms = dht1.getTemperature();
@@ -340,7 +341,12 @@ String collect_measures()
   
   //Read the analog values
   if (measures.length() > 0) measures += ":";
-  measures = measures + "00" + String(analogRead(PIN_ANALOG1)) + ":01" + String(analogRead(PIN_ANALOG2));
+  ams = analogRead(PIN_ANALOG1);
+  ams = analogRead(PIN_ANALOG1); // Read TWICE to ensure MUX switch is stable
+  measures = measures + "00" + String(ams);
+  ams = analogRead(PIN_ANALOG2);
+  ams = analogRead(PIN_ANALOG2); // Read TWICE to ensure MUX switch is stable  
+  measures = measures + ":01" + String(ams);
   //Battery voltage value measured by analog pin.
   measures = measures + ":" + VALIM_MIS + String(analogRead(VALIM_ANALOG));
 
