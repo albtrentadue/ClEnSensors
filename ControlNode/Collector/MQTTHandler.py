@@ -117,7 +117,7 @@ class MQTTHandler :
     - topic is the topic to publish to
     - delay_for_reply is the time in ms to wait if a synchronous reply is expected. -1 means NOT expected 
     """
-    def send_mqtt_message_with_header(self, topic, msg, purpose, reply_topic, delay_for_reply):                 
+    def send_mqtt_message_with_header(self, msg, topic, purpose, reply_topic, delay_for_reply=-1):                 
         msg_to_send = purpose + ';' + reply_topic + ';' + str(delay_for_reply) + ';' +  msg
         MQTTHandler.__mqttc.publish(topic, msg_to_send)
         MQTTHandler.__logger.info('Published:' + msg_to_send + ' on topic ' + topic)

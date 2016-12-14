@@ -79,7 +79,7 @@ class Collector (threading.Thread):
             self.empty_measures[nd] = {tg : 'U' for tg in config.get_configured_tags_by_node(nd)}
 
         # MQTT relays to serial or not
-        self.mqtt_relayed = config.MQTT_RELAYED
+        self.mqtt_relayed_to_serial = config.MQTT_RELAYED_TO_SERIAL
         # The list of the IDs of discovered sensor nodes
         self.sensor_nodes = []
         # The last collected timestamp
@@ -273,10 +273,10 @@ class Collector (threading.Thread):
     def _send_command(self, dest, cmd, msg_data='', resp_wait=600): 
         msg = MSG_TERMINATOR + CONTROL_ID + dest + cmd + msg_data + MSG_TERMINATOR
         Collector.__logger.debug('Sending:' + msg + ' to ' + dest)
-        if self.mqtt_relayed:
-            # If relayed on other transport, destination is parsed from the pyload
+        if self.mqtt_relayed_to_serial:
+            # If relayed on serial communication, destination is parsed from the payload
             # and the use of a specific topic per node is not needed
-            Collector.__mqtt_handler.send_mqtt_message_with_header('clen/nodes', msg, 'COMMAND', 'clen/collector', resp_wait)
+            Collector.__mqtt_handler.send_mqtt_message_with_header(msg, 'clen/serial', 'COMMAND', 'clen/collector', resp_wait)
 	else:
             Collector.__mqtt_handler.send_mqtt_message(msg, 'clen/nodes/' + dest)
 

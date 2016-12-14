@@ -54,7 +54,7 @@ class MQTT2Serial (threading.Thread):
         threading.Thread.__init__(self)
         MQTT2Serial.__config = config
         # The Relayed mode subcribes to a single topic for all nodes
-        mqtt_handler.add_subscription('clen/nodes')
+        mqtt_handler.add_subscription('clen/serial')
         MQTT2Serial.__mqtt_handler = mqtt_handler
         # The serial interface to communicate to sensors
         self.__serial_port = serial_port

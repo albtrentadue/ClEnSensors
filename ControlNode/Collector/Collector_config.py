@@ -33,9 +33,12 @@ CFG_DEFAULTS = {
 	'time_interval' : '60',
 	'max_sensor_nodes' : '30',
 	'json_server_address' : 'localhost:8081',
+        'json_app_user' : 'appadmin@sensors.io',
+        'json_app_pwd' : 'prova123',
+        'json_app' : 'myApplication',
         'mqtt_server_address' : 'localhost',
         'mqtt_port' : '1883',
-        'mqtt_relayed' : 'False',
+        'mqtt_relayed_to_serial' : 'False',
         'rrd_base_dir' : '/var/opt/clensensors',
         'rrd_length' : '10800'
 }
@@ -80,7 +83,7 @@ class Collector_config:
                 self.API_KEY = config.get('json','api_key')
                 self.MQTT_SERVER_ADDRESS = config.get('mqtt','mqtt_server_address')
                 self.MQTT_PORT = config.get('mqtt','mqtt_port')
-                self.MQTT_RELAYED = config.getboolean('mqtt','mqtt_relayed')
+                self.MQTT_RELAYED_TO_SERIAL = config.getboolean('mqtt','mqtt_relayed_to_serial')
                 self.RRD_BASE_DIR = config.get('rrd','rrd_base_dir')
                 self.RRD_LENGTH = config.getint('rrd','rrd_length')
 

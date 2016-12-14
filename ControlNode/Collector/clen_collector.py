@@ -83,7 +83,7 @@ def _on_mqtt_message(client, userdata, msg):
 ###### End MQTT Callbacks ########
 mqtt_handler.init_connect_mqtt(_on_mqtt_connect, _on_mqtt_message)
 
-if the_config.MQTT_RELAYED:
+if the_config.MQTT_RELAYED_TO_SERIAL:
     mqtt2serial = MQTT2Serial(the_config, arg_ser, mqtt_handler)
     mqtt2serial.start()
 rrd_if = RRD(the_config)
@@ -104,7 +104,7 @@ print 'Waiting Retriever to exit...'
 retriever.join()
 print 'Waiting Collector to exit...'
 collector.join()
-if the_config.MQTT_RELAYED:
+if the_config.MQTT_RELAYED_TO_SERIAL:
     print 'Waiting MQTT2Serial to exit...'
     mqtt2serial.join()
 
