@@ -43,7 +43,7 @@ class DreamFactoryRetriever (Retriever):
     __rest_session_id = ''
 
     #Initializer
-    def __init__(self, collector, config, RRD_if):
+    def __init__(self, config, collector, RRD_if):
         super(DreamFactoryRetriever, self).__init__(config, collector, RRD_if)
 
                         
@@ -72,7 +72,7 @@ class DreamFactoryRetriever (Retriever):
         retval = False
         if Retriever.connected :
             for measure in measures :
-                tc_measure = self._translate(measure)
+                tc_measure = self.translate(measure)
                 if tc_measure != None:
                     #Store to DB via REST API here
                     Retriever.logger.debug('Measure record to be posted:' + str(tc_measure))
@@ -84,7 +84,7 @@ class DreamFactoryRetriever (Retriever):
                     rec["misura"] = tc_measure['MEASURED_ITEM']
                     rec["unita"] = tc_measure['UNIT']
                     rec["valore"] = tc_measure['VALUE'] #float
-                    
+
                     rest_sensors_api={}
                     rest_sensors_api["resource"]=rec
                     # Store data into DB via REST
@@ -99,27 +99,9 @@ class DreamFactoryRetriever (Retriever):
                     Retriever.logger.warning('Unknown tag '+measure['MEAS_TAG']+' in translation for node '+measure['ID_SENSOR'])
         else:
             Retriever.logger.info('Measures not posted because connection to REST server is not available.')
-                        
+
         return retval
 
-    """
-     Translates the raw data into data to be stored in the database
-     The measure parameter is a measure dictionary (see collect_measures for structure)
-     Returns a dictionay that is the initial measure structure as above, enriched with fields:
-     t['POSITION']
-     t['MEASURED_ITEM']
-     t['UNIT']
-    """
-    def _translate(self, measure) :
-        tc_measure = measure
-        tc = Retriever.config.get_transcalibration_values(measure['ID_SENSOR'], measure['MEAS_TAG'])
-        if tc != None:
-            tc_measure['POSITION'] = tc[0]
-            tc_measure['MEASURED_ITEM'] = tc[1]
-            tc_measure['UNIT'] = tc[2]
-            return tc_measure
-        else:
-            return None
-                
+
 ### DreamFactoryRetriever class definition ends here
 

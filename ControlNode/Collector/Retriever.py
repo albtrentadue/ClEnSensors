@@ -220,8 +220,10 @@ class Retriever (threading.Thread):
      t['POSITION']
      t['MEASURED_ITEM']
      t['UNIT']
+
+     This method should be overridden when different JSON fields need to be mapped via the transcalibration
     """
-    def _translate(self, measure) :
+    def translate(self, measure) :
         tc_measure = measure
         tc = Retriever.config.get_transcalibration_values(measure['ID_SENSOR'], measure['MEAS_TAG'])
         if tc != None:
