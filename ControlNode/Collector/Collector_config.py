@@ -32,7 +32,13 @@ CFG_DEFAULTS = {
 	'log_level' : 'INFO',
 	'time_interval' : '60',
 	'max_sensor_nodes' : '30',
-	'rest_server_address' : '127.0.0.1:8081',
+	'json_server_address' : 'localhost:8081',
+        'json_app_user' : 'appadmin@sensors.io',
+        'json_app_pwd' : 'prova123',
+        'json_app' : 'myApplication',
+        'mqtt_server_address' : 'localhost',
+        'mqtt_port' : '1883',
+        'mqtt_relayed_to_serial' : 'False',
         'rrd_base_dir' : '/var/opt/clensensors',
         'rrd_length' : '10800'
 }
@@ -70,11 +76,14 @@ class Collector_config:
 		self.TIME_INTERVAL = config.getint('main','time_interval')
 		self.MAX_SENSOR_NODES = config.getint('main','max_sensor_nodes')
 		self.SERIAL_BAUDRATE = config.getint('main','serial_baud_rate')
-                self.REST_SERVER_ADDRESS = config.get('rest','rest_server_address')
-                self.REST_APP_USER = config.get('rest','rest_app_user')
-                self.REST_APP_PWD = config.get('rest','rest_app_pwd')
-                self.DF_APP = config.get('rest','df_app')
-                self.API_KEY = config.get('rest','api_key')
+                self.JSON_SERVER_ADDRESS = config.get('json','json_server_address')
+                self.JSON_APP_USER = config.get('json','json_app_user')
+                self.JSON_APP_PWD = config.get('json','json_app_pwd')
+                self.JSON_APP = config.get('json','json_app')
+                self.API_KEY = config.get('json','api_key')
+                self.MQTT_SERVER_ADDRESS = config.get('mqtt','mqtt_server_address')
+                self.MQTT_PORT = config.get('mqtt','mqtt_port')
+                self.MQTT_RELAYED_TO_SERIAL = config.getboolean('mqtt','mqtt_relayed_to_serial')
                 self.RRD_BASE_DIR = config.get('rrd','rrd_base_dir')
                 self.RRD_LENGTH = config.getint('rrd','rrd_length')
 

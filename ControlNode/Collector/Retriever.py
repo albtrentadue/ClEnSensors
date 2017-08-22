@@ -34,7 +34,7 @@ TIME_WAIT_SYNC = 30
 """
 The Retriever class implements the process running on the Control Node
 and forwarding measures from the local RRD database to the target
-Management Database through the exposed REST interface
+Management Database through the exposed JSON interface
 """
 class Retriever (threading.Thread):
         
@@ -65,7 +65,7 @@ class Retriever (threading.Thread):
 	else:
             hdlr = logging.StreamHandler(sys.stdout)
 		
-	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+	formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
 	hdlr.setFormatter(formatter)
 	Retriever.logger.addHandler(hdlr)
 	loglevel=eval('logging.' + config.LOG_LEVEL)
@@ -88,7 +88,10 @@ class Retriever (threading.Thread):
                 data_sent = self._retrieve(data_time)
             if data_time == 0 or not data_sent:
                 Retriever.logger.info('Retriever sleeps waiting. last_sent_ts is:' + str(self.last_sent_ts))
-                time.sleep(Retriever.config.TIME_INTERVAL)
+                for i in range(int(Retriever.config.TIME_INTERVAL/10)):
+                    time.sleep(10)
+                    if not self.keep_on:
+                        break
 
                         
     """
@@ -217,8 +220,10 @@ class Retriever (threading.Thread):
      t['POSITION']
      t['MEASURED_ITEM']
      t['UNIT']
+
+     This method should be overridden when different JSON fields need to be mapped via the transcalibration
     """
-    def _translate(self, measure) :
+    def translate(self, measure) :
         tc_measure = measure
         tc = Retriever.config.get_transcalibration_values(measure['ID_SENSOR'], measure['MEAS_TAG'])
         if tc != None:

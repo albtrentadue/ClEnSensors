@@ -23,7 +23,6 @@
 """
 
 import sys, time, logging, pickle, threading
-#"unirest" is imported from the external module unirest / http://unirest.io/python.html
 import urllib, urllib2, httplib
 from Retriever import Retriever
 
@@ -36,19 +35,12 @@ Management Database running in the EmonCMS system.
 """
 class EmonRetriever (Retriever):	
 
-    # The REST Session ID
-    __rest_session_id = ''
-
-    # The connection flag
-    __rest_connected = False
-
     #Initializer
     def __init__(self, config, collector, RRD_if):
         super(EmonRetriever, self).__init__(config, collector, RRD_if)
-
                         
     """
-    Connects to the DreamFactory REST server
+    Connects to the JSON server
     If connection fails, the program continues, but will not save measures to
     the service
     """
@@ -68,9 +60,9 @@ class EmonRetriever (Retriever):
                 #tc_measure = self.translate(measure) - Not used with EmonCMS
                 tc_measure = measure
                 if tc_measure != None:
-                    #Store to DB via REST API here
+                    #Store to DB via JSON API here
                     Retriever.logger.debug('Measure record to be posted:' + str(tc_measure))
-                    post_url = "http://" + Retriever.config.REST_SERVER_ADDRESS + "/emoncms/input/post.json?"
+                    post_url = "http://" + Retriever.config.JSON_SERVER_ADDRESS + "/emoncms/input/post.json?"
                     url_data = "apikey=" + Retriever.config.API_KEY
                     url_data = url_data + "&time=" + str(timestamp)
                     url_data = url_data + "&node=" + str(int(tc_measure['ID_SENSOR']))
@@ -107,7 +99,7 @@ class EmonRetriever (Retriever):
                 else:
                     Retriever.logger.warning('Unknown tag '+measure['MEAS_TAG']+' in translation for node '+measure['ID_SENSOR'])
         else:
-            Retriever.logger.info('Measures not posted because connection to REST server is not available.')
+            Retriever.logger.info('Measures not posted because connection to JSON server is not available.')
                         
         return retval
                

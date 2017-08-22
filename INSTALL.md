@@ -18,6 +18,7 @@ There are no specific HW requirements for the Control Node. However, the process
 The Control Node must have a GNU/Linux kernel 3 Operative System (OS). It is possible to use various different flavours of Linux, provided that they support the software components described in the following sections.
 
 The current version of the Control Node SW has been integrated using **LinuxMint 17.3 "Rosa" - GNULinux kernel 3.19.0**.
+Later versions of LinuxMint are expected to work as well.
 
 ### The SW owner OS user
 It is recommended that the Control Node SW is not run as "root" user. A specific owner of the Control Node SW should be created in the OS. The system has been integrated with the installation directory owned by a user named "**clensensors**" but of course any name can be chosen. The documentation will assume in the following that the "clensensors" user has been created.
@@ -44,7 +45,7 @@ Python 3 is in general not supported. The Control Node has not been tested with 
 
 **IMPORTANT**: if both versions 2.7 and 3 are installed in the Linux box, then the system must be configured to run Python 2.7 as default
 
-Python native development libraries are needed to allow installation of the python libraries listeb below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+Python native development libraries are needed to allow installation of the python libraries listed below. The **python-dev**  installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
 
 ```# sudo apt-get install python-dev```
 
@@ -59,6 +60,16 @@ To test the availability of PySerial library, the following command must termina
 
 If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site https://pypi.python.org/pypi/pyserial/2.7
 
+The following external python library is required:
+* **Paho-1.1**
+
+To test the availability of PySerial library, the following command must terminate with no error messages:
+
+```$ python -c "import paho.mqtt.client as mqtt"```
+
+If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the Paho library site http://www.eclipse.org/paho
+
+
 ### RRD Tool
 The Control Node uses the **RRDTool** round-robin database tool as local buffer storage system. RRDTool is an open source storage system suitable for the storage and analysis of numeric time series. RRDTool reference website is http://oss.oetiker.ch/rrdtool/
 
@@ -67,19 +78,40 @@ The RRDTool installable package is available as .deb package for LinuxMint. It c
 ```$ sudo apt-get install rrdtool```
 
 RRDTool will require its python libraries to be installed as well to work with ClEnSensors
-To test the availability of RRDTool python library, the following command must terminate with no error messages:
+
+To test the availability of RRDTool Python library, the following command must terminate with no error messages:
 
 ```$ python -c "import rrdtool"```
 
-If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the RRDTool site http://oss.oetiker.ch/rrdtool/prog/rrdpython.en.html
+If the library should be missing, it can be installed by means of the **python-rrdtool** package . The installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```$ sudo apt-get install python-rrdtool```
 
 
 The measures buffer storage physical location can be chosen within any directory for which the "clensensors" user has read/write permission. The default location is **/var/opt/clensensors**. Assuming the use of this location, it must be created in advance of the Control Node operation, using the commands:
-
 ```
 $ sudo mkdir /var/opt/clensensors
 $ sudo chown clensensors.clensensors /var/opt/clensensors
 ```
+
+### MQTT Server Mosquitto
+MQTT middleware needs a central MQTT Broker to dispatch messages. The MQTT Broker used in ClEnSensor is Mosquitto.
+
+Mosquitto installable package is available as .deb package for LinuxMint. It can be installed using the standard package installation command apt-get:
+
+```$ sudo apt-get install mosquitto```
+
+The Mosquitto broker is installed as a Linux service. Its status can be verified as usual:
+
+```$ sudo service mosquitto status```
+
+Mosquitto configuration file is in /etc/mosquitto/mosquitto.conf
+
+There are many configuration options available for the Mosquitto broker. The most relevant are settings related to SSL use to send encrypted messages. Please refer to Mosquitto documentation for more information on the website http://mosquitto.org
+
+It is advisable to install also the mosquitto utilities to test and debug the messages exchanged by the modules. Such utilities are in the mosquitto-clients package:
+
+```$ sudo apt-get install mosquitto-clients```
  
 ### Other useful SW components
 Besides the necessary SW components, it is recommended to install on the Linux box the following utilities that may be needed to troubleshoot the system in case of problems.
@@ -156,9 +188,10 @@ The installation of the dashboard is indeed the installation of EmonCMS, then it
 ## SW Requirements
 
 EmonCMS requires the following dependencies to be installed on the Linux OS of the Management Node:
-`apache2, mysql-server, mysql-client, php, libapache2-mod-php, php-mysql, php-curl, php-pear, php-dev, php-mcrypt, php-json, git-core, redis-server, build-essential, ufw, ntp`
 
-**NOTE**: Emoncms website indicates 5.x as version to be uses. However newer versions of Ubuntu/Mint only support PHP-7 in relation to the `pear` package manager, therefore it is recommended to use the version 7.0 that is expected to work the same. 
+`apache2, mysql-server, mysql-client, php, libapache2-mod-php, php-mysql, php-curl, php-pear, php-dev, php-mcrypt, php-json, git-core, redis-server, build-essential, ufw, ntp`.
+
+**NOTE**: Emoncms website indicates 5.x as version to be uses. However newer versions of Ubuntu/Mint only support PHP-7 in relation to the `pear` package manager, therefore it is recommended to use the version 7.0 that is expected to work the same.
 
 **NOTE**: at installation time, MySQL Server prompts for the 'root' superuser password. This password **must be kept at hand** for future uses.
 
@@ -223,9 +256,9 @@ sudo mkdir /var/lib/phpfiwa
 sudo mkdir /var/lib/phpfina
 sudo mkdir /var/lib/phptimeseries
 
-sudo chown www-data:root /var/lib/phpfiwa
-sudo chown www-data:root /var/lib/phpfina
-sudo chown www-data:root /var/lib/phptimeseries
+sudo chown www-data.root /var/lib/phpfiwa
+sudo chown www-data.root /var/lib/phpfina
+sudo chown www-data.root /var/lib/phptimeseries
 ```
 
 ## Creating the database in MySQL
