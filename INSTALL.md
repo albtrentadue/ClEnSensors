@@ -61,7 +61,7 @@ To test the availability of PySerial library, the following command must termina
 If the library should be missing, it can be installed using the "pip" utility or by following the instructions in the PySerial library site https://pypi.python.org/pypi/pyserial/2.7
 
 The following external python library is required:
-* **Paho-1.1**
+* **Paho-1.3.x**
 
 To test the availability of PySerial library, the following command must terminate with no error messages:
 
