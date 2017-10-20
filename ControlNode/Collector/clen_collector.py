@@ -70,7 +70,7 @@ mqtt_handler = MQTTHandler(the_config)
 """
 The callback for when the client receives a CONNACK response from the server.
 """
-def _on_mqtt_connect(client, userdata, rc):
+def _on_mqtt_connect(client, userdata, flags, rc):
     # TODO: May be needed to handle reconnection of all subscribed topics
     #       in case of reconnection...?
     pass
