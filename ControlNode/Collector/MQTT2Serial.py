@@ -97,11 +97,13 @@ class MQTT2Serial (threading.Thread):
     4: the messsage to forward
     """
     def _serve_message(self):
-        msg_fields = MQTT2Serial.__mqtt_handler.receive_mqtt_msg('clen/nodes')
+        msg_fields = MQTT2Serial.__mqtt_handler.receive_mqtt_msg('clen/serial')
         if len(msg_fields):
             MQTT2Serial.__logger.debug('Header fields:' + str(msg_fields))
             if msg_fields[1] == 'COMMAND' :
                 self._serve_command(msg_fields[2], int(msg_fields[3]), msg_fields[4])
+        else:
+            time.sleep(0.2)
 
     """
     Forwards a message to the nodes through the serial interface.
@@ -120,15 +122,14 @@ class MQTT2Serial (threading.Thread):
             rx_msg = self._receive_from_serial()
             MQTT2Serial.__logger.debug('Response was:' + rx_msg)
             if len(rx_msg):
-                MQTT2Serial.__logger.debug('Relying serial message:' + rx_msg)
-                MQTT2Serial.__mqtt_handler.send_mqtt_message_with_header(reply_topic, rx_msg, 'RESPONSE', '', 0)
-            
-                
+                MQTT2Serial.__logger.debug('Relaying serial message:' + rx_msg)
+                MQTT2Serial.__mqtt_handler.send_mqtt_message_with_header(rx_msg, reply_topic, 'RESPONSE', '', 0)
+
+
     """
     Open the serial communication to connected serial communication device
     """
-    def _create_serial(self):
-            
+    def _create_serial(self): 
         #Serial setup
         try:
             # Open the serial communication
@@ -163,14 +164,19 @@ class MQTT2Serial (threading.Thread):
         except:
             MQTT2Serial.__logger.error('Error when reading from serial:' + str(sys.exc_info()[1]))
 
-        #Here the sequence of characters has been received                    
+        #Here the sequence of characters has been received
+        #Strip possible newlines
+        rx_ser = rx_ser.rstrip("\n\r")
         l = len(rx_ser)
         if l > 0:
             if rx_ser[0] != MSG_TERMINATOR or rx_ser[l-1] != MSG_TERMINATOR:
                 MQTT2Serial.__logger.warning('Received incomplete message:' + rx_ser + '. Ignored.')
-            else:                
-                MQTT2Serial.__logger.debug('Received message:' + rx_ser)                                    
-                    
+                MQTT2Serial.__logger.warning('Last char code was:' + str(ord(rx_ser[l-1])))
+                #FIXED: Ignoring means empty the message
+                rx_ser = ''
+            else:
+                MQTT2Serial.__logger.debug('Received message:' + rx_ser)
+
         return rx_ser
 
 

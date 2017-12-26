@@ -117,7 +117,7 @@ class MQTTHandler :
     - topic is the topic to publish to
     - delay_for_reply is the time in ms to wait if a synchronous reply is expected. -1 means NOT expected 
     """
-    def send_mqtt_message_with_header(self, msg, topic, purpose, reply_topic, delay_for_reply=-1):                 
+    def send_mqtt_message_with_header(self, msg, topic, purpose, reply_topic, delay_for_reply=-1):
         msg_to_send = purpose + ';' + reply_topic + ';' + str(delay_for_reply) + ';' +  msg
         MQTTHandler.__mqttc.publish(topic, msg_to_send)
         MQTTHandler.__logger.info('Published:' + msg_to_send + ' on topic ' + topic)
@@ -152,11 +152,13 @@ class MQTTHandler :
         if topic in MQTTHandler.__mqtt_buffers:
             msgq = MQTTHandler.__mqtt_buffers[topic]
             if not msgq.empty():
-                new_msg = msgq.get_nowait() 
+                new_msg = msgq.get_nowait()
                 MQTTHandler.__logger.info('Popped up from topic '+ topic +' queue:' + new_msg)
-                header_fields = [topic] + new_msg.split(';')
-            
+                #Split is applied only 3 times to extract only the first 4 fields.
+                #This allows using ";" within the payload
+                header_fields = [topic] + new_msg.split(';',3)
+
         return header_fields
 
 ### MQTTHandler class definition ends here
- 
+

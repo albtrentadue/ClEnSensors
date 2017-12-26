@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ClEnSensors.  If not, see <http://www.gnu.org/licenses/>.
 
-VERSION_STRING="V1dev_bld1"
+VERSION_STRING="Master_bld171109"
 PACKAGE_BASE_NAME="ClEn_Collector"
 
 # Take the start location as the Collector root source dir
