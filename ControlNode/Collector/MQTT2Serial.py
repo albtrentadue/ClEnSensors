@@ -24,6 +24,7 @@
 
 #"serial" is imported from the external module pySerial / https://pythonhosted.org/pyserial/
 import sys, serial, time, threading
+import os, signal
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -136,7 +137,10 @@ class MQTT2Serial (threading.Thread):
             self.serial_if = serial.Serial(port=self.__serial_port, baudrate=MQTT2Serial.__config.SERIAL_BAUDRATE)
             MQTT2Serial.__logger.info('Serial port ' + self.__serial_port + ' created.')
         except:
-            MQTT2Serial.__logger.error('Error when opening serial:' + str(sys.exc_info()[1]))
+            # If there is no serial, program must terminate. If serial is busy or lost, restarting has chance to re-get it.
+            MQTT2Serial.__logger.error('Error when opening serial:' + str(sys.exc_info()[1]) + '- Terminating the collector.')
+            # Send SIGINT to let other threads exit cleanly
+            os.kill(os.getpid(), signal.SIGINT)
             sys.exit(1)
             
     """
@@ -148,7 +152,12 @@ class MQTT2Serial (threading.Thread):
             self.serial_if.write(msg)
             self.serial_if.flush()
         except:
-            MQTT2Serial.__logger.error('Error when writing to serial:' + str(sys.exc_info()[1]))
+            # If there is no serial, program must terminate. If serial is busy or lost, restarting has chance to re-get it.
+            MQTT2Serial.__logger.error('Error when writing to serial:' + str(sys.exc_info()[1]) + '- Terminating the collector.')
+            # Send SIGINT to let other threads exit cleanly
+            os.kill(os.getpid(), signal.SIGINT)
+            sys.exit(1)
+
 
     """
     Receives a new message from the serial source
@@ -162,7 +171,11 @@ class MQTT2Serial (threading.Thread):
                 rx_ser += self.serial_if.read(1)
                 time.sleep(0.001)
         except:
-            MQTT2Serial.__logger.error('Error when reading from serial:' + str(sys.exc_info()[1]))
+            # If there is no serial, program must terminate. If serial is busy or lost, restarting has chance to re-get it.
+            MQTT2Serial.__logger.error('Error when reading from serial:' + str(sys.exc_info()[1]) + '- Terminating the collector.')
+            # Send SIGINT to let other threads exit cleanly
+            os.kill(os.getpid(), signal.SIGINT)
+            sys.exit(1)
 
         #Here the sequence of characters has been received
         #Strip possible newlines
